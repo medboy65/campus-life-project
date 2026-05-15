@@ -1,0 +1,3109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xidian AI Campus Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red-main:   #CC0000;
+    --red-deep:   #880000;
+    --red-light:  #FF3333;
+    --red-pale:   rgba(204,0,0,0.12);
+    --blue-main:  #0050C8;
+    --blue-light: #4488FF;
+    --blue-pale:  rgba(0,80,200,0.12);
+    --white:      #FFFFFF;
+    --black:      #000000;
+    --black-soft: #0A0A0A;
+    --black-mid:  #111118;
+    --surface:    rgba(255,255,255,0.04);
+    --surface-md: rgba(255,255,255,0.07);
+    --surface-hi: rgba(255,255,255,0.11);
+    --border:     rgba(255,255,255,0.1);
+    --border-red: rgba(204,0,0,0.35);
+    --border-blu: rgba(0,80,200,0.35);
+    --text-pri:   #FFFFFF;
+    --text-sec:   rgba(255,255,255,0.6);
+    --text-mute:  rgba(255,255,255,0.32);
+    --grey-100:   rgba(255,255,255,0.06);
+    --grey-200:   rgba(255,255,255,0.04);
+    --grey-300:   rgba(255,255,255,0.12);
+    --grey-500:   rgba(255,255,255,0.35);
+    --grey-700:   rgba(255,255,255,0.55);
+    --shadow-sm:  0 2px 8px rgba(0,0,0,0.5);
+    --shadow-md:  0 6px 24px rgba(0,0,0,0.6);
+    --shadow-lg:  0 16px 48px rgba(0,0,0,0.7);
+    --glow-red:   0 0 20px rgba(204,0,0,0.4);
+    --glow-blue:  0 0 20px rgba(0,80,200,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+    background: #000008;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--text-pri);
+  }
+
+  /* Global dark background with grid — applies to ALL pages */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 10%,  rgba(0,80,200,0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 45% at 85% 90%,  rgba(204,0,0,0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 5%,   rgba(204,0,0,0.08) 0%, transparent 55%),
+      linear-gradient(160deg, #00000f 0%, #050005 50%, #00050f 100%);
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,80,200,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,80,200,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: globalGridPulse 8s ease-in-out infinite alternate;
+  }
+  @keyframes globalGridPulse {
+    0%   { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  /* ═══════════════════════ FLOATING BG TEXT ═══════════════════════ */
+  .bg-floating {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .float-word {
+    position: absolute;
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: rgba(204,0,0,0.05);
+    white-space: nowrap;
+    animation: floatDrift linear infinite;
+    letter-spacing: 0.05em;
+  }
+
+  @keyframes floatDrift {
+    0%   { transform: translateY(0) translateX(0); opacity: 0.04; }
+    25%  { opacity: 0.08; }
+    50%  { transform: translateY(-30px) translateX(15px); opacity: 0.04; }
+    75%  { opacity: 0.06; }
+    100% { transform: translateY(0) translateX(0); opacity: 0.04; }
+  }
+
+  /* ═══════════════════════ TOP NAVBAR ═══════════════════════ */
+  .navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(0,0,8,0.85);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(204,0,0,0.3);
+    box-shadow: 0 2px 24px rgba(0,0,0,0.6), 0 1px 0 rgba(204,0,0,0.2) inset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+    gap: 12px;
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .logo-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+  }
+  .logo-placeholder img {
+    width: auto;
+    height: auto;
+    max-width: 90px;
+    max-height: 55px;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 0 8px rgba(204,0,0,0.4));
+  }
+  #logoInput { display: none; }
+
+  .school-name-wrap { display: flex; flex-direction: column; }
+  .school-name-en {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-pri);
+    letter-spacing: 0.03em;
+    text-decoration: underline;
+    text-decoration-color: var(--red-main);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+  .school-name-cn {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--red-light);
+    letter-spacing: 0.06em;
+  }
+
+  .nav-center {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-pri);
+    text-align: center;
+    letter-spacing: 0.04em;
+    flex: 2;
+    text-shadow: 0 0 20px rgba(204,0,0,0.3);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: 'Poppins', sans-serif;
+  }
+  .nav-btn:hover { background: var(--red-pale); border-color: var(--border-red); color: var(--red-light); }
+
+  .nav-back-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-back-btn:hover { background: var(--red-pale); color: var(--red-light); border-color: var(--border-red); }
+  .nav-back-btn.hidden { opacity: 0; pointer-events: none; }
+
+  .ai-helper-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--red-main), var(--red-deep));
+    border: 1px solid rgba(204,0,0,0.5);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: var(--glow-red);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .ai-helper-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(204,0,0,0.7); }
+
+  /* ═══════════════════════ PAGES ═══════════════════════ */
+  .page { display: none; padding-top: 80px; min-height: 100vh; position: relative; z-index: 1; }
+  .page.active { display: flex; flex-direction: column; }
+
+  /* ═══════════════════════ LANGUAGE SELECTION ═══════════════════════ */
+  /* ═══════════════════════ LANGUAGE PAGE — FUTURISTIC AI ═══════════════════════ */
+  #page-lang {
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+  }
+
+  /* Layered animated background */
+  #page-lang::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%,   rgba(204,0,0,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 50% at 10% 100%,  rgba(0,80,200,0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 90% 80%,   rgba(204,0,0,0.18) 0%, transparent 55%),
+      linear-gradient(160deg, #0a0010 0%, #000510 40%, #0a0000 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Animated grid lines */
+  #page-lang::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,80,200,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,80,200,0.07) 1px, transparent 1px),
+      linear-gradient(rgba(204,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(204,0,0,0.04) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+    animation: gridPulse 6s ease-in-out infinite alternate;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  @keyframes gridPulse {
+    0%   { opacity: 0.6; transform: perspective(800px) rotateX(2deg) scale(1.02); }
+    100% { opacity: 1;   transform: perspective(800px) rotateX(0deg) scale(1); }
+  }
+
+  /* Orbiting ring */
+  .lang-orbit {
+    position: absolute;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,80,200,0.15);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: orbitSpin 30s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .lang-orbit::before {
+    content: '';
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #CC0000;
+    top: -4px; left: 50%;
+    box-shadow: 0 0 14px 4px rgba(204,0,0,0.7);
+  }
+  .lang-orbit-2 {
+    width: 900px; height: 900px;
+    border-color: rgba(204,0,0,0.08);
+    animation-duration: 50s;
+    animation-direction: reverse;
+  }
+  .lang-orbit-2::before {
+    background: #0050C8;
+    box-shadow: 0 0 14px 4px rgba(0,80,200,0.7);
+    top: auto; bottom: -4px;
+  }
+  @keyframes orbitSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  /* Floating particles */
+  .lang-particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    animation: particleFloat linear infinite;
+    opacity: 0;
+  }
+  @keyframes particleFloat {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.5; }
+    100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+  }
+
+  /* Scanline shimmer */
+  .lang-scanline {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,0.012) 3px,
+      rgba(255,255,255,0.012) 4px
+    );
+    z-index: 1;
+    pointer-events: none;
+    animation: scanMove 8s linear infinite;
+  }
+  @keyframes scanMove {
+    0%   { background-position: 0 0; }
+    100% { background-position: 0 200px; }
+  }
+
+  /* Main content wrapper */
+  .lang-container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 30px 20px 50px;
+    max-width: 780px;
+    width: 100%;
+  }
+
+  /* Logo */
+  .lang-logo-big {
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    position: relative;
+  }
+  .lang-logo-big::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(204,0,0,0.18) 0%, transparent 70%);
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%,100% { transform: scale(1);   opacity: 0.6; }
+    50%      { transform: scale(1.1); opacity: 1; }
+  }
+  .lang-logo-big img {
+    width: auto; height: auto;
+    max-width: 200px; max-height: 130px;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 0 16px rgba(204,0,0,0.5));
+    position: relative;
+  }
+
+  /* AI badge chip above title */
+  .lang-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,80,200,0.15);
+    border: 1px solid rgba(0,80,200,0.4);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #5599FF;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .lang-ai-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #5599FF;
+    box-shadow: 0 0 8px 2px rgba(85,153,255,0.8);
+    animation: blinkDot 1.5s ease-in-out infinite;
+  }
+  @keyframes blinkDot { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* Main title */
+  .lang-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 5vw, 3.4rem);
+    font-weight: 900;
+    color: #FFFFFF;
+    margin-bottom: 6px;
+    line-height: 1.1;
+    text-shadow: 0 0 40px rgba(204,0,0,0.4), 0 2px 0 rgba(0,0,0,0.5);
+    letter-spacing: -0.01em;
+  }
+  .lang-title span.accent-red  { color: #FF3333; }
+  .lang-title span.accent-blue { color: #4488FF; }
+
+  /* Tagline */
+  .lang-tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* Subtitle CN */
+  .lang-subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 18px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Futuristic divider */
+  .lang-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    margin: 0 auto 22px;
+    max-width: 360px;
+  }
+  .lang-divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(204,0,0,0.5), transparent);
+  }
+  .lang-divider-icon {
+    font-size: 18px;
+    filter: drop-shadow(0 0 6px rgba(204,0,0,0.6));
+  }
+
+  /* Feature pills row */
+  .lang-features {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 36px;
+  }
+  .lang-feature-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+  }
+  .lang-feature-pill:hover {
+    background: rgba(204,0,0,0.12);
+    border-color: rgba(204,0,0,0.35);
+    color: rgba(255,255,255,0.85);
+  }
+
+  /* Prompt text */
+  .lang-prompt {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 22px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Language option cards */
+  .lang-options {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .lang-card {
+    width: 200px;
+    padding: 28px 20px 24px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    text-align: center;
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+  }
+  .lang-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(204,0,0,0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .lang-card:hover::before { opacity: 1; }
+  .lang-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    transition: left 0.5s ease;
+  }
+  .lang-card:hover::after { left: 150%; }
+  .lang-card:hover {
+    border-color: rgba(204,0,0,0.6);
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 20px 50px rgba(204,0,0,0.25), 0 0 0 1px rgba(204,0,0,0.3) inset;
+    background: rgba(204,0,0,0.08);
+  }
+
+  .lang-card .lang-flag {
+    font-size: 38px;
+    font-weight: 900;
+    font-family: 'Playfair Display', serif;
+    color: #fff;
+    margin-bottom: 10px;
+    display: block;
+    text-shadow: 0 0 20px rgba(204,0,0,0.5);
+    letter-spacing: 0.05em;
+  }
+  .lang-card .lang-label {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.04em;
+  }
+  .lang-card .lang-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 5px;
+    letter-spacing: 0.05em;
+  }
+  .lang-card .lang-arrow {
+    display: block;
+    margin-top: 14px;
+    font-size: 11px;
+    color: rgba(204,0,0,0.7);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: all 0.25s;
+  }
+  .lang-card:hover .lang-arrow { opacity: 1; transform: translateY(0); }
+
+  /* Bottom caption */
+  .lang-bottom-caption {
+    margin-top: 36px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* ═══════════════════════ HOME PAGE ═══════════════════════ */
+  #page-home {
+    background: transparent;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .home-hero {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+
+  .home-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
+    font-weight: 900;
+    color: var(--text-pri);
+    text-shadow: 0 0 40px rgba(204,0,0,0.35);
+    margin-bottom: 10px;
+  }
+
+  .home-subtitle-line {
+    width: 80px; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--red-main), var(--blue-light), transparent);
+    margin: 0 auto 16px;
+    border-radius: 2px;
+  }
+
+  .home-desc {
+    font-size: 14px;
+    color: var(--text-sec);
+    margin-bottom: 48px;
+    letter-spacing: 0.03em;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    max-width: 1100px;
+    width: 100%;
+    padding: 0 20px 40px;
+  }
+
+  .menu-card {
+    border-radius: 20px;
+    padding: 32px 20px 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red-main), var(--blue-light));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .menu-card:hover::before { opacity: 1; }
+  .menu-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--border-red);
+    box-shadow: 0 20px 50px rgba(204,0,0,0.2), var(--glow-red);
+  }
+
+  .menu-icon { font-size: 44px; margin-bottom: 16px; }
+  .menu-num {
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red-main);
+    opacity: 0.35;
+    letter-spacing: 0.1em;
+  }
+  .menu-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-pri);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .menu-desc { font-size: 11px; color: var(--text-mute); line-height: 1.5; }
+
+  /* ═══════════════════════ INNER PAGES ═══════════════════════ */
+  .inner-page {
+    flex: 1;
+    padding: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .section-header {
+    text-align: center;
+    padding: 30px 0 28px;
+  }
+  .section-header .s-icon { font-size: 48px; margin-bottom: 12px; }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 900;
+    color: var(--text-pri);
+    margin-bottom: 8px;
+    text-shadow: 0 0 30px rgba(204,0,0,0.3);
+  }
+  .section-header p { font-size: 13px; color: var(--text-sec); }
+  .red-line {
+    width: 60px; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--red-main), var(--blue-light), transparent);
+    margin: 12px auto 0;
+    border-radius: 2px;
+  }
+
+  /* ═══════════════════════ MAP PAGE ═══════════════════════ */
+  .map-upload-zone {
+    border: 1px dashed var(--border-red);
+    border-radius: 20px;
+    padding: 60px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+  .map-upload-zone:hover { border-color: var(--red-light); background: var(--red-pale); }
+  .map-upload-zone .upload-icon { font-size: 52px; margin-bottom: 16px; }
+  .map-upload-zone p { color: var(--text-sec); font-size: 13px; }
+  .map-frame {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-red);
+    background: var(--surface);
+    display: none;
+    position: relative;
+  }
+  .map-frame img { width: 100%; display: block; }
+  .map-controls {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 16px;
+  }
+  .map-ctrl-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: var(--shadow-sm);
+  }
+  .map-ctrl-btn:hover { background: var(--red-pale); border-color: var(--border-red); color: var(--red-light); font-weight:700; }
+
+  /* ═══════ CAMPUS CHOICE CARDS ═══════ */
+  .campus-choice-card {
+    width: 200px; padding: 36px 20px 28px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer; text-align: center;
+    transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(10px);
+  }
+  .campus-choice-card:hover, .campus-choice-card.active {
+    background: var(--red-pale); border-color: var(--border-red);
+    transform: translateY(-6px); box-shadow: 0 16px 40px rgba(204,0,0,0.2), var(--glow-red);
+  }
+  .campus-choice-title { font-size: 16px; font-weight: 700; color: var(--text-pri); margin-bottom: 4px; }
+  .campus-choice-sub { font-size: 11px; color: var(--red-light); }
+  #mapInput { display: none; }
+
+  /* ═══════════════════════ MINI GAMES ═══════════════════════ */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 10px;
+  }
+  .game-slot {
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(10px);
+  }
+  .game-slot.loaded {
+    border-style: solid;
+    border-color: var(--border-red);
+    padding: 0;
+  }
+  .game-slot:hover { border-color: var(--border-red); background: var(--red-pale); }
+  .game-slot .game-num {
+    font-size: 36px; font-weight: 900; color: rgba(204,0,0,0.12); margin-bottom: 8px;
+    font-family: 'Playfair Display', serif;
+  }
+  .game-slot p { font-size: 12px; color: var(--text-sec); }
+  .game-slot .slot-icon { font-size: 40px; margin-bottom: 12px; }
+  .game-slot .slot-label { font-size: 13px; font-weight: 600; color: var(--text-pri); margin-bottom: 6px; }
+  .game-slot iframe { width: 100%; height: 400px; border: none; border-radius: 14px; }
+  #gameInput1, #gameInput2, #gameInput3 { display: none; }
+
+  /* ═══════════════════════ AI GENERATOR ═══════════════════════ */
+  .gen-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin: 10px 0 24px;
+  }
+  .gen-opt {
+    border-radius: 14px;
+    padding: 24px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(10px);
+  }
+  .gen-opt.active { background: var(--red-pale); border-color: var(--border-red); box-shadow: var(--glow-red); }
+  .gen-opt:hover { background: var(--red-pale); border-color: var(--border-red); }
+  .gen-opt .gopt-icon { font-size: 32px; margin-bottom: 8px; }
+  .gen-opt .gopt-label { font-size: 12px; font-weight: 600; color: var(--text-pri); }
+
+  .gen-panel {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(10px);
+  }
+  .gen-panel h3 { font-size: 14px; font-weight: 600; color: var(--text-pri); margin-bottom: 12px; }
+  .gen-input {
+    width: 100%;
+    background: var(--surface-md);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text-pri);
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    margin-bottom: 14px;
+    resize: vertical;
+    min-height: 80px;
+  }
+  .gen-input:focus { outline: none; border-color: var(--red-main); }
+  .gen-input::placeholder { color: var(--text-mute); }
+  .gen-submit {
+    background: linear-gradient(135deg, var(--red-main), var(--red-deep));
+    border: none;
+    color: var(--white);
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 2px 10px rgba(204,0,0,0.25);
+  }
+  .gen-submit:hover { background: linear-gradient(135deg, var(--red-light), var(--red-main)); box-shadow: 0 4px 18px rgba(204,0,0,0.4); }
+  .gen-result {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--surface-md);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-pri);
+    line-height: 1.7;
+    min-height: 60px;
+    white-space: pre-wrap;
+  }
+  .gen-loading { color: var(--red-main); font-style: italic; }
+
+  /* ═══════════════════════ AI GUIDE CHAT ═══════════════════════ */
+  .chat-wrap {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 220px);
+    max-height: 600px;
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(14px);
+  }
+  .chat-header {
+    background: linear-gradient(135deg, var(--red-main), var(--red-deep));
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: none;
+  }
+  .chat-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .chat-header-text h4 { font-size: 14px; font-weight: 700; color: var(--white); }
+  .chat-header-text p { font-size: 11px; color: rgba(255,255,255,0.7); }
+  .chat-status { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; margin-left: auto; flex-shrink: 0; }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(0,0,8,0.6);
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border-red); border-radius: 2px; }
+
+  .msg {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    animation: msgPop 0.3s ease;
+  }
+  @keyframes msgPop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.bot {
+    background: var(--surface-md);
+    border: 1px solid var(--border);
+    color: var(--text-pri);
+    align-self: flex-start;
+    border-radius: 4px 16px 16px 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .msg.user {
+    background: linear-gradient(135deg, var(--red-main), var(--red-deep));
+    border: none;
+    color: var(--white);
+    align-self: flex-end;
+    border-radius: 16px 4px 16px 16px;
+    box-shadow: 0 2px 8px rgba(204,0,0,0.25);
+  }
+
+  .chat-input-row {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    background: rgba(0,0,8,0.7);
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--surface-md);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 10px 16px;
+    color: var(--text-pri);
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    resize: none;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+  .chat-input:focus { outline: none; border-color: var(--red-main); }
+  .chat-input::placeholder { color: var(--text-mute); }
+  .chat-send {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--red-main), var(--red-deep));
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(204,0,0,0.3);
+  }
+  .chat-send:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(204,0,0,0.4); }
+
+  /* ═══════════════════════ FUTURE 2050 ═══════════════════════ */
+  .future-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+  }
+  .future-slot {
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px dashed var(--border-red);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    aspect-ratio: 4/3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+  .future-slot.loaded { border-style: solid; border-color: var(--border-red); padding: 0; }
+  .future-slot:hover { border-color: var(--red-light); box-shadow: var(--shadow-md), var(--glow-red); }
+  .future-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+  .future-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, transparent 100%);
+    padding: 24px 16px 14px;
+    font-size: 12px;
+    color: #fff;
+    display: none;
+  }
+  .future-slot.loaded .future-caption { display: block; }
+  .future-slot .future-num { font-size: 32px; font-weight: 900; color: rgba(0,0,0,0.10); font-family: 'Playfair Display', serif; }
+  .future-slot p { font-size: 11px; color: var(--text-sec); margin-top: 4px; }
+  .future-caption-edit {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,8,0.85);
+    border: 1px solid var(--border-red);
+    color: var(--red-light);
+    border-radius: 6px;
+    font-size: 10px;
+    padding: 3px 7px;
+    cursor: pointer;
+    display: none;
+  }
+  .future-slot.loaded .future-caption-edit { display: block; }
+  #futureInputs { display: none; }
+
+  /* ═══════════════════════ AI HELPER MODAL ═══════════════════════ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 90px 16px 16px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .helper-chat {
+    width: 340px;
+    max-height: 500px;
+    background: rgba(0,0,12,0.92);
+    color: var(--text-pri);
+    border: 1px solid var(--border-red);
+    border-radius: 20px 20px 4px 20px;
+    backdrop-filter: blur(18px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(20px);
+    transition: transform 0.3s;
+  }
+  .modal-overlay.open .helper-chat { transform: translateY(0); }
+
+  .helper-header {
+    background: linear-gradient(135deg, var(--red-main), var(--red-deep));
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: none;
+  }
+  .helper-header span { font-size: 14px; font-weight: 600; color: var(--white); flex: 1; }
+  .helper-close {
+    background: none; border: none; color: rgba(255,255,255,0.7);
+    cursor: pointer; font-size: 18px; padding: 0; line-height: 1;
+  }
+  .helper-close:hover { color: var(--white); }
+
+  .helper-msgs {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: rgba(0,0,8,0.6);
+  }
+  .helper-msgs::-webkit-scrollbar { width: 3px; }
+  .helper-msgs::-webkit-scrollbar-thumb { background: var(--border-red); border-radius: 2px; }
+
+  .helper-input-row {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px;
+    background: rgba(0,0,8,0.7);
+  }
+  .helper-input {
+    flex: 1;
+    background: var(--surface-md);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 8px 12px;
+    color: var(--text-pri);
+    font-size: 12px;
+    font-family: 'Poppins', sans-serif;
+  }
+  .helper-input:focus { outline: none; border-color: var(--red-main); }
+  .helper-input::placeholder { color: var(--text-mute); }
+  .helper-send-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--red-main), var(--red-deep));
+    border: none; cursor: pointer;
+    font-size: 13px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(204,0,0,0.25);
+  }
+
+  /* ═══════════════════════ QUICK SUGGESTIONS ═══════════════════════ */
+  .quick-chips {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;
+  }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: var(--shadow-sm);
+  }
+  .chip:hover { background: var(--red-pale); border-color: var(--border-red); color: var(--red-light); }
+
+  /* ═══════════════════════ TYPING INDICATOR ═══════════════════════ */
+  .typing-indicator { display: flex; gap: 4px; padding: 4px 0; }
+  .typing-indicator span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red-light);
+    box-shadow: 0 0 6px rgba(204,0,0,0.6);
+    animation: typingBounce 1.2s infinite;
+    opacity: 0.5;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+
+
+  /* Hidden file inputs for future photos */
+  .hidden-input { display: none; }
+
+  /* ═══════════════════════ RESPONSIVE ═══════════════════════ */
+  @media (max-width: 600px) {
+    .nav-center { display: none; }
+    .menu-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .lang-options { gap: 14px; }
+    .lang-card { width: 140px; padding: 24px 14px; }
+    .helper-chat { width: calc(100vw - 20px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════ FLOATING BACKGROUND TEXT ════════════ -->
+<div class="bg-floating" id="bgFloating"></div>
+
+<!-- ════════════════════ NAVBAR ════════════════════ -->
+<nav class="navbar">
+  <div class="nav-left">
+    <div class="logo-placeholder" id="logoPlaceholderNav">
+      <img id="logoImgNav" src="logo.jpg" alt="Logo" style="width:auto;height:auto;max-width:100%;object-fit:contain;display:block">
+      <span id="logoPlaceholderText" style="display:none">🎓</span>
+    </div>
+    <div class="school-name-wrap">
+      <span class="school-name-en" id="navSchoolEn">Xidian University</span>
+      <span class="school-name-cn" id="navSchoolCn">西安电子科技大学</span>
+    </div>
+  </div>
+
+  <div class="nav-center" id="navTitle">Xidian AI Campus Companion</div>
+
+  <div class="nav-right">
+    <button class="nav-back-btn hidden" id="btnBack" onclick="goBack()" title="Back">←</button>
+    <button class="nav-btn" id="btnHome" onclick="goHome()" style="display:none" data-en="🏠 Home" data-cn="🏠 首页">🏠 Home</button>
+    <button class="nav-btn" id="btnLang" onclick="showLang()" data-en="🌐 EN" data-cn="🌐 中文">🌐 EN</button>
+    <button class="ai-helper-btn" onclick="toggleHelperChat()" title="AI Helper">🤖</button>
+  </div>
+</nav>
+
+<!-- ════════════════════ PAGE: LANGUAGE ════════════════════ -->
+<div class="page active" id="page-lang">
+
+  <!-- Orbiting rings -->
+  <div class="lang-orbit"></div>
+  <div class="lang-orbit lang-orbit-2"></div>
+
+  <!-- Scanline overlay -->
+  <div class="lang-scanline"></div>
+
+  <!-- Floating particles (injected by JS) -->
+  <div id="langParticles"></div>
+
+  <div class="lang-container">
+
+    <!-- Logo -->
+    <div class="lang-logo-big" id="logoLangBig">
+      <img id="logoImgLang" src="logo.jpg" alt="Xidian University Logo"
+           style="width:auto;height:auto;max-width:100%;object-fit:contain;display:block">
+      <span id="langLogoText" style="display:none">🎓</span>
+    </div>
+
+    <!-- AI system badge -->
+    <div class="lang-ai-badge">⚡ AI-Powered Campus System · 2050 Edition</div>
+
+    <!-- Title -->
+    <div class="lang-title">
+      Xidian <span class="accent-red">AI</span> Campus<br>
+      <span class="accent-blue">Companion</span>
+    </div>
+
+    <div class="lang-tagline">Intelligent · Adaptive · Future-Ready</div>
+    <div class="lang-subtitle">西安电子科技大学 · AI 校园助手 · 未来智能导航</div>
+
+    <!-- Divider -->
+    <div class="lang-divider">
+      <div class="lang-divider-line"></div>
+      <div class="lang-divider-icon">🤖</div>
+      <div class="lang-divider-line"></div>
+    </div>
+
+    <!-- Feature pills -->
+    <div class="lang-features">
+      <span class="lang-feature-pill">🗺️ Smart Campus Maps</span>
+      <span class="lang-feature-pill">🧠 AI Guide Chat</span>
+      <span class="lang-feature-pill">🔮 Vision 2050</span>
+      <span class="lang-feature-pill">🎮 Campus Games</span>
+      <span class="lang-feature-pill">✨ AI Generator</span>
+    </div>
+
+    <!-- Language prompt -->
+    <p class="lang-prompt" id="langPromptText">Initialize · Select Language</p>
+
+    <!-- Language cards -->
+    <div class="lang-options">
+      <div class="lang-card" onclick="setLang('en')">
+        <span class="lang-flag">EN</span>
+        <div class="lang-label">English</div>
+        <div class="lang-sub">Continue in English</div>
+        <span class="lang-arrow">→ Launch</span>
+      </div>
+      <div class="lang-card" onclick="setLang('cn')">
+        <span class="lang-flag">中</span>
+        <div class="lang-label">中文</div>
+        <div class="lang-sub">使用中文继续</div>
+        <span class="lang-arrow">→ 启动</span>
+      </div>
+    </div>
+
+    <div class="lang-bottom-caption">
+      Powered by Anthropic Claude AI · Xidian University © 2025
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════ PAGE: HOME ════════════════════ -->
+<div class="page" id="page-home">
+  <div class="home-hero">
+    <div class="home-title" id="homeTitle">Welcome to Xidian AI Campus Companion</div>
+    <div class="home-subtitle-line"></div>
+    <p class="home-desc" id="homeDesc">Your intelligent guide to campus life · 您的智能校园助手</p>
+  </div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="goTo('page-map')">
+      <div class="menu-num">01</div>
+      <div class="menu-icon">🗺️</div>
+      <div class="menu-title" id="menu1Title">Interactive Campus Map</div>
+      <div class="menu-desc" id="menu1Desc">Explore Xidian University's campus interactively</div>
+    </div>
+    <div class="menu-card" onclick="goTo('page-games')">
+      <div class="menu-num">02</div>
+      <div class="menu-icon">🎮</div>
+      <div class="menu-title" id="menu2Title">Mini Games</div>
+      <div class="menu-desc" id="menu2Desc">Fun campus-themed games to play & relax</div>
+    </div>
+    <div class="menu-card" onclick="goTo('page-generator')">
+      <div class="menu-num">03</div>
+      <div class="menu-icon">✨</div>
+      <div class="menu-title" id="menu3Title">AI Generator</div>
+      <div class="menu-desc" id="menu3Desc">Create stickers, quotes, memes & posters</div>
+    </div>
+    <div class="menu-card" onclick="goTo('page-guide')">
+      <div class="menu-num">04</div>
+      <div class="menu-icon">🤖</div>
+      <div class="menu-title" id="menu4Title">AI Campus Guide</div>
+      <div class="menu-desc" id="menu4Desc">Ask anything about Xidian University</div>
+    </div>
+    <div class="menu-card" onclick="goTo('page-future')">
+      <div class="menu-num">05</div>
+      <div class="menu-icon">🔮</div>
+      <div class="menu-title" id="menu5Title">Future Xidian 2050</div>
+      <div class="menu-desc" id="menu5Desc">Envision the campus of tomorrow</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ PAGE: CAMPUS MAP ════════════════════ -->
+<div class="page" id="page-map">
+  <div class="inner-page">
+    <div class="section-header">
+      <div class="s-icon">🗺️</div>
+      <h2 id="mapTitle">Interactive Campus Map</h2>
+      <p id="mapDesc">Choose a campus to explore</p>
+      <div class="red-line"></div>
+    </div>
+
+
+
+    <!-- Campus Selector -->
+    <div id="mapCampusSelector" style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:28px">
+      <div class="campus-choice-card" id="campusCardNorth" onclick="selectCampus('north')">
+        <div style="font-size:40px;margin-bottom:10px">🏛️</div>
+        <div class="campus-choice-title" id="campusNorthLabel">North Campus</div>
+        <div class="campus-choice-sub" id="campusNorthSub">北校区 · Main Campus</div>
+      </div>
+      <div class="campus-choice-card" id="campusCardSouth" onclick="selectCampus('south')">
+        <div style="font-size:40px;margin-bottom:10px">🌿</div>
+        <div class="campus-choice-title" id="campusSouthLabel">South Campus</div>
+        <div class="campus-choice-sub" id="campusSouthSub">南校区 · New Campus</div>
+      </div>
+    </div>
+
+    <!-- Map View Area (shown after campus is selected) -->
+    <div id="mapViewArea" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div id="mapActiveCampusLabel" style="font-size:15px;font-weight:700;color:var(--gold-light);display:flex;align-items:center;gap:8px"></div>
+        <button class="map-ctrl-btn" onclick="resetCampusChoice()" id="mapChangeCampusBtn" style="font-size:11px;padding:6px 14px">🔄 Change Campus</button>
+      </div>
+
+      <!-- Open map button -->
+      <div id="mapOpenBtn" style="display:none;text-align:center;padding:30px 20px">
+        <a id="mapExternalLink" href="#" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:16px;background:linear-gradient(135deg,#CC0000,#880000);color:#fff;font-size:15px;font-weight:700;text-decoration:none;border:1px solid #CC0000;transition:all .2s"
+          onmouseover="this.style.background='linear-gradient(135deg,#EE1111,#AA0000)'"
+          onmouseout="this.style.background='linear-gradient(135deg,#CC0000,#880000)'">
+          🗺️ <span id="mapOpenBtnText">Open Campus Map</span>
+        </a>
+        <p style="font-size:11px;color:#666;margin-top:12px" id="mapOpenBtnSub">Click to open the interactive map in a new tab</p>
+      </div>
+      <!-- No link set message (shown when URL not yet configured) -->
+      <div id="mapNoLink" style="display:none;text-align:center;padding:50px 20px;background:rgba(0,0,0,0.2);border:2px dashed rgba(204,0,0,0.3);border-radius:16px">
+        <div style="font-size:48px;margin-bottom:14px">🔗</div>
+        <p style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:8px" id="mapNoLinkText">Map coming soon</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.35)" id="mapNoLinkSub">The map for this campus will be available soon</p>
+      </div>
+
+      <!-- Map iframe (for Google Maps / interactive maps) -->
+      <div id="mapIframeWrap" style="display:none;border-radius:16px;overflow:hidden;border:2px solid rgba(204,0,0,0.3);background:#f5f5f5">
+        <iframe id="mapIframe" src="" style="width:100%;height:480px;border:none;display:block" allowfullscreen loading="lazy"></iframe>
+      </div>
+
+      <!-- Map image (for direct image URLs) -->
+      <div class="map-frame" id="mapFrame" style="display:none">
+        <img id="mapImg" src="" alt="Campus Map" style="width:100%;display:block;border-radius:14px">
+      </div>
+
+      <div class="map-controls" id="mapControls" style="display:none;margin-top:14px">
+        <button class="map-ctrl-btn" id="mapBtn1" onclick="showMapInfo('library')">📚 Library</button>
+        <button class="map-ctrl-btn" id="mapBtn2" onclick="showMapInfo('cafeteria')">🍜 Cafeteria</button>
+        <button class="map-ctrl-btn" id="mapBtn3" onclick="showMapInfo('dorm')">🏠 Dormitory</button>
+        <button class="map-ctrl-btn" id="mapBtn4" onclick="showMapInfo('stadium')">⚽ Stadium</button>
+        <button class="map-ctrl-btn" id="mapBtn5" onclick="showMapInfo('admin')">🏛️ Admin</button>
+      </div>
+      <div id="mapInfoBox" style="display:none;margin-top:14px;padding:14px 18px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(204,0,0,0.3);font-size:13px;color:rgba(255,255,255,0.8)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ PAGE: MINI GAMES ════════════════════ -->
+<div class="page" id="page-games">
+  <div class="inner-page">
+    <div class="section-header">
+      <div class="s-icon">🎮</div>
+      <h2 id="gamesTitle">Mini Games</h2>
+      <p id="gamesDesc">Choose a game to play</p>
+      <div class="red-line"></div>
+    </div>
+    <!-- Game selector -->
+    <div id="gameSelector" class="games-grid">
+      <div class="game-slot" onclick="launchGame(1)" style="cursor:pointer;border-style:solid;border-color:rgba(204,0,0,0.3)">
+        <div class="slot-icon">🤖</div>
+        <div class="game-num" style="color:rgba(204,0,0,0.5)">01</div>
+        <div class="slot-label" id="gameCard1Title" style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px">Campus Life Simulator</div>
+        <p id="gameCard1Desc" style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5">Track your daily activities &amp; get AI-powered student profile</p>
+      </div>
+      <div class="game-slot" onclick="launchGame(2)" style="cursor:pointer;border-style:solid;border-color:rgba(204,0,0,0.3)">
+        <div class="slot-icon">🎭</div>
+        <div class="game-num" style="color:rgba(204,0,0,0.5)">02</div>
+        <div class="slot-label" id="gameCard2Title" style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px">Personality Quiz</div>
+        <p id="gameCard2Desc" style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5">10 questions → your Xidian student personality story</p>
+      </div>
+      <div class="game-slot" onclick="launchGame(3)" style="cursor:pointer;border-style:solid;border-color:rgba(204,0,0,0.3)">
+        <div class="slot-icon">🃏</div>
+        <div class="game-num" style="color:rgba(204,0,0,0.5)">03</div>
+        <div class="slot-label" id="gameCard3Title" style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px">Memory Card Game</div>
+        <p id="gameCard3Desc" style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5">Match campus-themed card pairs, beat your score!</p>
+      </div>
+    </div>
+    <!-- In-page game container -->
+    <div id="gameContainer" style="display:none">
+      <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
+        <button class="map-ctrl-btn" onclick="closeGame()" id="closeGameBtn">← Back to Games</button>
+        <span id="activeGameTitle" style="font-size:14px;font-weight:700;color:var(--gold-light)"></span>
+      </div>
+      <div id="gameFrame" style="background:rgba(0,0,0,0.2);border-radius:16px;border:1px solid rgba(204,0,0,0.3);overflow:visible;min-height:500px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ PAGE: AI GENERATOR ════════════════════ -->
+<div class="page" id="page-generator">
+  <div class="inner-page">
+    <div class="section-header">
+      <div class="s-icon">✨</div>
+      <h2 id="genTitle">AI Generator</h2>
+      <p id="genDesc">Choose a category and let AI create for you</p>
+      <div class="red-line"></div>
+    </div>
+
+    <div class="gen-options">
+      <div class="gen-opt active" onclick="selectGenType('stickers')" id="genOpt0">
+        <div class="gopt-icon">🏷️</div>
+        <div class="gopt-label" id="genOptLabel0">Stickers</div>
+      </div>
+      <div class="gen-opt" onclick="selectGenType('quotes')" id="genOpt2">
+        <div class="gopt-icon">💬</div>
+        <div class="gopt-label" id="genOptLabel2">Motivational Quotes</div>
+      </div>
+      <div class="gen-opt" onclick="selectGenType('memes')" id="genOpt3">
+        <div class="gopt-icon">😂</div>
+        <div class="gopt-label" id="genOptLabel3">Memes</div>
+      </div>
+      <div class="gen-opt" onclick="selectGenType('poster')" id="genOpt4">
+        <div class="gopt-icon">📋</div>
+        <div class="gopt-label" id="genOptLabel4">Poster Texts</div>
+      </div>
+    </div>
+
+    <!-- Gallery grid — filled by renderGallery() based on selected category -->
+    <div id="genGallery" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ PAGE: AI GUIDE ════════════════════ -->
+<div class="page" id="page-guide">
+  <div class="inner-page" style="display:flex;flex-direction:column;height:calc(100vh - 100px)">
+    <div class="section-header" style="padding-bottom:16px">
+      <div class="s-icon">🤖</div>
+      <h2 id="guideTitle">AI Campus Guide</h2>
+      <p id="guideDesc">Ask me anything about Xidian University</p>
+      <div class="red-line"></div>
+    </div>
+
+    <div class="quick-chips" id="guideChips">
+      <span class="chip" onclick="sendGuideMsg(this.textContent)">📅 Academic calendar</span>
+      <span class="chip" onclick="sendGuideMsg(this.textContent)">🍜 Best restaurants on campus</span>
+      <span class="chip" onclick="sendGuideMsg(this.textContent)">📚 Library hours</span>
+      <span class="chip" onclick="sendGuideMsg(this.textContent)">🏥 Medical center</span>
+      <span class="chip" onclick="sendGuideMsg(this.textContent)">🎓 Enrollment guide</span>
+    </div>
+
+    <div class="chat-wrap" style="flex:1">
+      <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-header-text">
+          <h4 id="guideChatName">Xidian AI Guide</h4>
+          <p id="guideChatSub">Your intelligent campus assistant</p>
+        </div>
+        <div class="chat-status"></div>
+      </div>
+      <div class="chat-messages" id="guideMsgs">
+        <div class="msg bot" id="guideWelcomeMsg">Hello! 👋 I'm your Xidian University AI guide. I can help you with information about academic programs, campus facilities, student services, dining, transportation, and much more. What would you like to know?</div>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="guideChatInput" placeholder="Ask me about Xidian..." rows="1" onkeydown="handleGuideChatKey(event)"></textarea>
+        <button class="chat-send" onclick="sendGuideMsg()" title="Send">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ PAGE: FUTURE 2050 ════════════════════ -->
+<div class="page" id="page-future">
+  <div class="inner-page">
+    <div class="section-header">
+      <div class="s-icon">🔮</div>
+      <h2 id="futureTitle">Future Xidian 2050</h2>
+      <p id="futureDesc">Visions of the future campus</p>
+      <div class="red-line"></div>
+    </div>
+    <div class="future-grid" id="futureGrid"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ AI HELPER MODAL ════════════════════ -->
+<div class="modal-overlay" id="helperOverlay" onclick="closeHelperOnBg(event)">
+  <div class="helper-chat" onclick="event.stopPropagation()">
+    <div class="helper-header">
+      <span style="font-size:18px">🤖</span>
+      <span id="helperTitle">AI Website Helper</span>
+      <button class="helper-close" onclick="toggleHelperChat()">✕</button>
+    </div>
+    <div class="helper-msgs" id="helperMsgs">
+      <div class="msg bot" id="helperWelcome" style="font-size:12px">Hi! 👋 I'll help you navigate this website. You can ask me how to use any feature!</div>
+    </div>
+    <div class="helper-input-row">
+      <input type="text" class="helper-input" id="helperInput" placeholder="Ask how to use..." onkeydown="if(event.key==='Enter')sendHelperMsg()">
+      <button class="helper-send-btn" onclick="sendHelperMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ══════════════════════ STATE ══════════════════════
+let currentLang = 'en';
+let pageHistory = [];
+let currentPage = 'page-lang';
+let currentGenType = 'stickers';
+let guideMessages = [];
+let helperMessages = [];
+
+// ══════════════════════ TRANSLATIONS ══════════════════════
+const T = {
+  en: {
+    navTitle: 'Xidian AI Campus Companion',
+    schoolName: 'Xidian University',
+    langBtn: '🌐 EN',
+    homeBtn: '🏠 Home',
+    homeTitle: 'Welcome to Xidian AI Campus Companion',
+    homeDesc: 'Your intelligent guide to campus life',
+    menu1: 'Interactive Campus Map', menu1d: 'Explore Xidian campus interactively',
+    menu2: 'Mini Games', menu2d: 'Fun campus-themed games',
+    menu3: 'AI Generator', menu3d: 'Browse stickers, quotes, memes & posters',
+    menu4: 'AI Campus Guide', menu4d: 'Ask anything about Xidian University',
+    menu5: 'Future Xidian 2050', menu5d: 'Envision the campus of tomorrow',
+    mapTitle: 'Interactive Campus Map', mapDesc: 'Choose a campus to explore',
+    mapUpload: 'Click to upload campus map', mapUploadSub: 'Supports JPG, PNG images',
+    mapCampusNorth: 'North Campus', mapCampusNorthSub: '北校区 · Main Campus',
+    mapCampusSouth: 'South Campus', mapCampusSouthSub: '南校区 · New Campus',
+    mapChangeCampus: '🔄 Change Campus',
+    mapBtns: ['📚 Library','🍜 Cafeteria','🏠 Dormitory','⚽ Stadium','🏛️ Admin'],
+    gamesTitle: 'Mini Games', gamesDesc: 'Choose a game to play',
+    gameCards: [
+      {title:'Campus Life Simulator',desc:'Track daily activities & get your AI student profile'},
+      {title:'Personality Quiz',desc:'10 questions → your Xidian student personality story'},
+      {title:'Memory Card Game',desc:'Match campus-themed card pairs, beat your score!'}
+    ],
+    closeGame: '← Back to Games',
+    genTitle: 'Content Gallery', genDesc: 'Choose a category to explore our collection',
+    genOpts: ['Stickers','Motivational Quotes','Memes','Poster Texts'],
+    guideTitle: 'AI Campus Guide', guideDesc: 'Ask me anything about Xidian University',
+    guideName: 'Xidian AI Guide', guideSub: 'Your intelligent campus assistant',
+    guidePlaceholder: 'Ask me about Xidian...',
+    guideWelcome: "Hello! 👋 I'm your Xidian University AI guide. I can help you with information about academic programs, campus facilities, student services, dining, transportation, and much more. What would you like to know?",
+    guideChips: ['📅 Academic calendar','🍜 Best restaurants on campus','📚 Library hours','🏥 Medical center','🎓 Enrollment guide'],
+    futureTitle: 'Future Xidian 2050', futureDesc: 'Visions of the future campus',
+    futureSlotLabel: 'Coming soon',
+    helperTitle: 'AI Website Helper',
+    helperWelcome: "Hi! 👋 I'll help you navigate this website. Ask me how to use any feature!",
+    helperPlaceholder: 'Ask how to use...',
+    mapInfos: {
+      library: '📚 Xidian Library — Open daily 8:00-22:00. Over 2 million books and digital resources available.',
+      cafeteria: '🍜 Campus Cafeteria — Multiple dining halls across campus. Open for breakfast (7:00-9:00), lunch (11:30-13:30), and dinner (17:00-19:30).',
+      dorm: '🏠 Student Dormitories — Modern living facilities with internet access, laundry rooms, and 24-hour security.',
+      stadium: '⚽ Sports Center — Olympic-standard swimming pool, basketball courts, football fields, and fitness center.',
+      admin: '🏛️ Administration Building — Student affairs, registration, international student office, and academic records.'
+    }
+  },
+  cn: {
+    navTitle: 'AI校园助手 · 西电',
+    schoolName: '西安电子科技大学',
+    langBtn: '🌐 中文',
+    homeBtn: '🏠 首页',
+    homeTitle: '欢迎来到西电AI校园助手',
+    homeDesc: '您的智能校园生活指南',
+    menu1: '校园互动地图', menu1d: '探索西电校园地图',
+    menu2: '迷你游戏', menu2d: '有趣的校园主题小游戏',
+    menu3: 'AI创作工具', menu3d: '生成贴纸、表情包、名言、海报',
+    menu4: 'AI校园导游', menu4d: '关于西电的任何问题都可以问我',
+    menu5: '未来西电2050', menu5d: '畅想未来校园',
+    mapTitle: '校园互动地图', mapDesc: '选择要探索的校区',
+    mapUpload: '点击上传校园地图', mapUploadSub: '支持JPG、PNG图片格式',
+    mapCampusNorth: '北校区', mapCampusNorthSub: '北校区 · 主校区',
+    mapCampusSouth: '南校区', mapCampusSouthSub: '南校区 · 新校区',
+    mapChangeCampus: '🔄 切换校区',
+    mapBtns: ['📚 图书馆','🍜 食堂','🏠 宿舍','⚽ 运动场','🏛️ 行政楼'],
+    gamesTitle: '迷你游戏', gamesDesc: '选择一个游戏开始',
+    gameCards: [
+      {title:'校园生活模拟器',desc:'记录今日活动，获取AI学生画像'},
+      {title:'个性测试',desc:'10道题 → 发现你的西电学生故事'},
+      {title:'记忆卡牌游戏',desc:'配对校园主题卡片，挑战你的记忆！'}
+    ],
+    closeGame: '← 返回游戏列表',
+    genTitle: '内容画廊', genDesc: '选择类别，浏览我们的精选内容',
+    genOpts: ['贴纸','励志名言','梗图','海报文字'],
+    guideTitle: 'AI校园导游', guideDesc: '关于西电的任何问题都可以问我',
+    guideName: 'AI校园助手', guideSub: '您的智能校园向导',
+    guidePlaceholder: '问问西电相关问题...',
+    guideWelcome: '你好！👋 我是西安电子科技大学的AI导游。我可以帮助你了解学术课程、校园设施、学生服务、餐饮、交通等各方面信息。你想了解什么？',
+    guideChips: ['📅 学年日历','🍜 校园美食推荐','📚 图书馆开放时间','🏥 校医院','🎓 入学指南'],
+    futureTitle: '未来西电2050', futureDesc: '未来校园愿景',
+    futureSlotLabel: '敬请期待',
+    helperTitle: 'AI使用助手',
+    helperWelcome: '你好！👋 我来帮你导航这个网站。问我任何功能的使用方法！',
+    helperPlaceholder: '询问如何使用...',
+    mapInfos: {
+      library: '📚 西电图书馆 — 每日开放 8:00-22:00。馆藏200余万册图书及丰富数字资源。',
+      cafeteria: '🍜 学生食堂 — 校园多处餐饮设施。早餐（7:00-9:00），午餐（11:30-13:30），晚餐（17:00-19:30）。',
+      dorm: '🏠 学生宿舍 — 现代化住宿设施，配备网络、洗衣房和24小时安保。',
+      stadium: '⚽ 体育中心 — 奥林匹克标准游泳池、篮球场、足球场和健身中心。',
+      admin: '🏛️ 行政楼 — 学生事务、注册、国际学生办公室及学籍管理。'
+    }
+  }
+};
+
+// ══════════════════════ FLOATING TEXT ══════════════════════
+function initFloating() {
+  const container = document.getElementById('bgFloating');
+  const texts = ['Xidian University','西安电子科技大学','西电','Innovation','创新未来','Technology','科技强国','AI Campus','人工智能','Xidian 西电'];
+  texts.forEach((text, i) => {
+    const el = document.createElement('div');
+    el.className = 'float-word';
+    el.textContent = text;
+    el.style.left = (Math.random() * 90) + '%';
+    el.style.top = (Math.random() * 100) + '%';
+    el.style.fontSize = (2 + Math.random() * 3) + 'rem';
+    el.style.animationDuration = (8 + Math.random() * 12) + 's';
+    el.style.animationDelay = (-Math.random() * 10) + 's';
+    container.appendChild(el);
+  });
+}
+initFloating();
+
+// ══════════════════════ LANG PAGE PARTICLES ══════════════════════
+(function spawnLangParticles() {
+  var container = document.getElementById('langParticles');
+  if (!container) return;
+  var colors = ['#CC0000','#FF3333','#0050C8','#4488FF','#ffffff'];
+  var symbols = ['◆','▲','●','◉','✦','⬡','◈'];
+  function spawn() {
+    var el = document.createElement('div');
+    var isSymbol = Math.random() > 0.5;
+    if (isSymbol) {
+      el.style.cssText = 'position:absolute;pointer-events:none;z-index:1;font-size:' + (8 + Math.random()*10) + 'px;color:' + colors[Math.floor(Math.random()*colors.length)] + ';opacity:0;animation:particleFloat ' + (6+Math.random()*10) + 's linear forwards;left:' + (Math.random()*100) + '%;animation-delay:' + (Math.random()*2) + 's';
+      el.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    } else {
+      var size = 2 + Math.random() * 4;
+      el.className = 'lang-particle';
+      el.style.cssText = 'position:absolute;pointer-events:none;z-index:1;width:' + size + 'px;height:' + size + 'px;background:' + colors[Math.floor(Math.random()*colors.length)] + ';border-radius:50%;opacity:0;animation:particleFloat ' + (7+Math.random()*10) + 's linear forwards;left:' + (Math.random()*100) + '%;animation-delay:' + (Math.random()*1.5) + 's;box-shadow:0 0 6px 2px ' + colors[0];
+    }
+    container.appendChild(el);
+    setTimeout(function() { el.remove(); }, 18000);
+  }
+  for (var i = 0; i < 18; i++) setTimeout(spawn, i * 400);
+  setInterval(spawn, 800);
+})();
+
+// ══════════════════════ LANGUAGE ══════════════════════
+function setLang(lang) {
+  currentLang = lang;
+  applyTranslations();
+  goTo('page-home');
+  document.getElementById('btnHome').style.display = 'block';
+  document.getElementById('btnLang').textContent = lang === 'en' ? '🌐 EN' : '🌐 中文';
+}
+
+function showLang() {
+  pageHistory.push(currentPage);
+  showPage('page-lang');
+  document.getElementById('btnBack').classList.remove('hidden');
+}
+
+function applyTranslations() {
+  const t = T[currentLang];
+  document.getElementById('navTitle').textContent = t.navTitle;
+  document.getElementById('navSchoolEn').textContent = t.schoolName;
+  document.getElementById('btnHome').setAttribute('data-label', t.homeBtn);
+  document.getElementById('btnHome').textContent = t.homeBtn;
+  document.getElementById('btnLang').textContent = t.langBtn;
+  document.getElementById('homeTitle').textContent = t.homeTitle;
+  document.getElementById('homeDesc').textContent = t.homeDesc;
+  document.getElementById('menu1Title').textContent = t.menu1;
+  document.getElementById('menu1Desc').textContent = t.menu1d;
+  document.getElementById('menu2Title').textContent = t.menu2;
+  document.getElementById('menu2Desc').textContent = t.menu2d;
+  document.getElementById('menu3Title').textContent = t.menu3;
+  document.getElementById('menu3Desc').textContent = t.menu3d;
+  document.getElementById('menu4Title').textContent = t.menu4;
+  document.getElementById('menu4Desc').textContent = t.menu4d;
+  document.getElementById('menu5Title').textContent = t.menu5;
+  document.getElementById('menu5Desc').textContent = t.menu5d;
+  document.getElementById('mapTitle').textContent = t.mapTitle;
+  document.getElementById('mapDesc').textContent = t.mapDesc;
+  // mapUploadText / mapUploadSub removed (upload zone replaced by link inputs)
+  document.getElementById('campusNorthLabel').textContent = t.mapCampusNorth;
+  document.getElementById('campusNorthSub').textContent = t.mapCampusNorthSub;
+  document.getElementById('campusSouthLabel').textContent = t.mapCampusSouth;
+  document.getElementById('campusSouthSub').textContent = t.mapCampusSouthSub;
+  document.getElementById('mapChangeCampusBtn').textContent = t.mapChangeCampus;
+  document.querySelectorAll('.map-ctrl-btn:not(#mapChangeCampusBtn)').forEach((btn, i) => { if(t.mapBtns[i]) btn.textContent = t.mapBtns[i]; });
+  document.getElementById('gamesTitle').textContent = t.gamesTitle;
+  document.getElementById('gamesDesc').textContent = t.gamesDesc;
+  if(t.gameCards) {
+    t.gameCards.forEach((gc, i) => {
+      const tt = document.getElementById('gameCard'+(i+1)+'Title');
+      const td = document.getElementById('gameCard'+(i+1)+'Desc');
+      if(tt) tt.textContent = gc.title;
+      if(td) td.textContent = gc.desc;
+    });
+  }
+  if(document.getElementById('closeGameBtn')) document.getElementById('closeGameBtn').textContent = t.closeGame || '← Back';
+  document.getElementById('genTitle').textContent = t.genTitle;
+  document.getElementById('genDesc').textContent = t.genDesc;
+  for(let i=0;i<5;i++) {
+    const el = document.getElementById('genOptLabel'+i);
+    if(el) el.textContent = t.genOpts[i];
+  }
+  renderGallery();
+  document.getElementById('guideTitle').textContent = t.guideTitle;
+  document.getElementById('guideDesc').textContent = t.guideDesc;
+  document.getElementById('guideChatName').textContent = t.guideName;
+  document.getElementById('guideChatSub').textContent = t.guideSub;
+  document.getElementById('guideChatInput').placeholder = t.guidePlaceholder;
+  document.getElementById('guideWelcomeMsg').textContent = t.guideWelcome;
+  const chips = document.getElementById('guideChips');
+  chips.innerHTML = t.guideChips.map(c => `<span class="chip" onclick="sendGuideMsg(this.textContent)">${c}</span>`).join('');
+  document.getElementById('futureTitle').textContent = t.futureTitle;
+  document.getElementById('futureDesc').textContent = t.futureDesc;
+  document.getElementById('helperTitle').textContent = t.helperTitle;
+  document.getElementById('helperWelcome').textContent = t.helperWelcome;
+  document.getElementById('helperInput').placeholder = t.helperPlaceholder;
+  updateFutureSlots();
+}
+
+// ══════════════════════ NAVIGATION ══════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentPage = id;
+  window.scrollTo(0,0);
+}
+
+function goTo(id) {
+  pageHistory.push(currentPage);
+  showPage(id);
+  document.getElementById('btnBack').classList.remove('hidden');
+  document.getElementById('btnHome').style.display = 'block';
+}
+
+function goBack() {
+  if(pageHistory.length > 0) {
+    const prev = pageHistory.pop();
+    showPage(prev);
+    if(pageHistory.length === 0) document.getElementById('btnBack').classList.add('hidden');
+  }
+}
+
+function goHome() {
+  pageHistory = [];
+  showPage('page-home');
+  document.getElementById('btnBack').classList.add('hidden');
+}
+
+// ══════════════════════ LOGO UPLOAD ══════════════════════
+function handleLogoUpload(input, target) {
+  const file = input.files[0];
+  if(!file) return;
+  const url = URL.createObjectURL(file);
+  if(target === 'nav') {
+    const placeholder = document.querySelector('.logo-placeholder');
+    placeholder.innerHTML = `<img src="${url}" alt="Logo">`;
+  }
+  if(target === 'lang') {
+    const bigLogo = document.querySelector('.lang-logo-big');
+    bigLogo.innerHTML = `<img src="${url}" alt="Logo" style="width:100%;height:100%;object-fit:contain;border-radius:12px">`;
+  }
+}
+
+// ══════════════════════ MAP ══════════════════════
+let activeCampus = null;
+let mapLinks = { north: '', south: '' };
+// ── Set your map URLs here ──
+var NORTH_MAP_URL = 'https://gis.xidian.edu.cn/#/home?campus=21048'; 
+var SOUTH_MAP_URL = 'https://gis.xidian.edu.cn/#/home?campus=21047';
+
+function selectCampus(campus) {
+  const links = { north: NORTH_MAP_URL, south: SOUTH_MAP_URL };
+  const url = links[campus];
+  const t = T[currentLang];
+  const label = campus === 'north'
+    ? (t.mapCampusNorth || 'North Campus')
+    : (t.mapCampusSouth || 'South Campus');
+  const icon = campus === 'north' ? '🏛️' : '🌿';
+
+  document.getElementById('mapCampusSelector').style.display = 'none';
+  document.getElementById('mapViewArea').style.display = 'block';
+  document.getElementById('mapActiveCampusLabel').innerHTML = icon + ' ' + label;
+
+  // Hide all map display elements first
+  document.getElementById('mapIframeWrap').style.display = 'none';
+  document.getElementById('mapFrame').style.display = 'none';
+  document.getElementById('mapControls').style.display = 'none';
+  document.getElementById('mapInfoBox').style.display = 'none';
+
+  if (url && url !== '#') {
+    // Show open-in-new-tab button
+    document.getElementById('mapNoLink').style.display = 'none';
+    document.getElementById('mapOpenBtn').style.display = 'block';
+    document.getElementById('mapExternalLink').href = url;
+    document.getElementById('mapOpenBtnText').textContent = (currentLang === 'cn' ? '打开' : 'Open') + ' ' + label + ' ' + (currentLang === 'cn' ? '地图' : 'Map');
+    document.getElementById('mapOpenBtnSub').textContent = currentLang === 'cn' ? '点击在新标签页中打开互动地图' : 'Click to open the interactive map in a new tab';
+  } else {
+    document.getElementById('mapOpenBtn').style.display = 'none';
+    document.getElementById('mapNoLink').style.display = 'block';
+    document.getElementById('mapNoLinkText').textContent = currentLang === 'cn' ? label + ' 地图即将上线' : label + ' map coming soon';
+    document.getElementById('mapNoLinkSub').textContent = currentLang === 'cn' ? '敬请期待！' : 'Stay tuned!';
+  }
+}
+
+
+function isImageUrl(url) {
+  return /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(url);
+}
+
+function resetCampusChoice() {
+  document.getElementById('mapCampusSelector').style.display = 'flex';
+  document.getElementById('mapViewArea').style.display = 'none';
+  document.getElementById('mapOpenBtn').style.display = 'none';
+  document.getElementById('mapNoLink').style.display = 'none';
+}
+
+
+function showMapInfo(key) {
+  const info = T[currentLang].mapInfos[key];
+  const box = document.getElementById('mapInfoBox');
+  box.style.display = 'block';
+  box.textContent = info;
+}
+
+// ══════════════════════ MINI GAMES ══════════════════════
+function launchGame(n) {
+  document.getElementById('gameSelector').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+  const titles = {
+    1: currentLang==='cn'?'🤖 校园生活模拟器':'🤖 Campus Life Simulator',
+    2: currentLang==='cn'?'🎭 个性测试':'🎭 Personality Quiz',
+    3: currentLang==='cn'?'🃏 记忆卡牌':'🃏 Memory Card Game'
+  };
+  document.getElementById('activeGameTitle').textContent = titles[n];
+  const frame = document.getElementById('gameFrame');
+  frame.innerHTML = '';
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'width:100%;height:780px;border:none;border-radius:16px;display:block';
+  iframe.scrolling = 'yes';
+  const builders = { 1: buildGame1, 2: buildGame2, 3: buildGame3 };
+  const htmlContent = builders[n](currentLang);
+  if (n === 1) {
+    // Use Blob URL for game1 to avoid srcdoc encoding issues
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    iframe.src = URL.createObjectURL(blob);
+  } else {
+    iframe.srcdoc = htmlContent;
+  }
+  frame.appendChild(iframe);
+  // Auto-resize iframe to fit its content after load
+  iframe.onload = function() {
+    try {
+      const resize = () => {
+        const h = iframe.contentDocument && iframe.contentDocument.body
+          ? iframe.contentDocument.body.scrollHeight + 40
+          : 780;
+        if (h > 200) iframe.style.height = h + 'px';
+      };
+      resize();
+      // Re-check after a short delay for dynamic content
+      setTimeout(resize, 400);
+      setTimeout(resize, 1200);
+    } catch(e) { iframe.style.height = '820px'; }
+  };
+}
+
+function closeGame() {
+  document.getElementById('gameSelector').style.display = 'grid';
+  document.getElementById('gameContainer').style.display = 'none';
+  document.getElementById('gameFrame').innerHTML = '';
+}
+
+// Auto-resize game iframe when content changes height
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.iframeHeight) {
+    const iframe = document.querySelector('#gameFrame iframe');
+    if (iframe && e.data.iframeHeight > 200) {
+      iframe.style.height = e.data.iframeHeight + 'px';
+    }
+  }
+});
+
+function buildGame1(lang) {
+  var isCn = lang === 'cn';
+
+  var ACTS = [
+    // STUDY cat:0
+    {cat:0,e:'📖',id:'lib1',minH:1,maxH:7,name:isCn?'图书馆自习':'Library Study',desc:isCn?'专注学习':'Focused study',pr:8,en:-4,hp:-1,hap:1},
+    {cat:0,e:'🏠',id:'home',minH:1,maxH:7,name:isCn?'在家自习':'Self-study at Home',desc:isCn?'舒适自律':'Comfy but disciplined',pr:6,en:-3,hp:0,hap:2},
+    {cat:0,e:'📝',id:'hw',minH:1,maxH:7,name:isCn?'完成作业':'Homework Session',desc:isCn?'完成任务效率+':'Stay on top of work',pr:7,en:-4,hp:0,hap:1},
+    {cat:0,e:'👥',id:'group',minH:1,maxH:4,name:isCn?'小组学习':'Group Study',desc:isCn?'互助学习社交+':'Learn together, social boost',pr:6,en:-2,hp:0,hap:5},
+    {cat:0,e:'🔁',id:'revision',minH:1,maxH:6,name:isCn?'考前复习':'Revision Before Exam',desc:isCn?'临考冲刺':'Pre-exam crunch',pr:10,en:-5,hp:-1,hap:-1},
+    {cat:0,e:'📕',id:'research',minH:1,maxH:5,name:isCn?'阅读/学术研究':'Reading / Academic Research',desc:isCn?'深度钻研':'Deep knowledge',pr:7,en:-3,hp:0,hap:2},
+    // MEALS cat:1
+    {cat:1,e:'🍳',id:'breakfast',minH:1,maxH:1,name:isCn?'吃早饭':'Breakfast',desc:isCn?'好好吃早饭':'Start the day right',pr:2,en:6,hp:5,hap:3},
+    {cat:1,e:'🍜',id:'lunch',minH:1,maxH:1,name:isCn?'吃午饭':'Lunch',desc:isCn?'和同学一起吃':'Fuel up with friends',pr:2,en:6,hp:5,hap:3},
+    {cat:1,e:'🥘',id:'dinner',minH:1,maxH:1,name:isCn?'吃晚饭':'Dinner',desc:isCn?'晚饭健康收尾':'End the day healthy',pr:1,en:5,hp:5,hap:3},
+    {cat:1,e:'🥗',id:'snack',minH:1,maxH:1,name:isCn?'健康零食':'Healthy Snack Break',desc:isCn?'补充能量':'Small energy boost',pr:1,en:3,hp:3,hap:2},
+    {cat:1,e:'☕',id:'coffee',minH:1,maxH:1,name:isCn?'咖啡/能量饮料':'Coffee / Energy Drink',desc:isCn?'短暂提神':'Short boost, energy loan',pr:3,en:5,hp:-2,hap:2},
+    {cat:1,e:'🍲',id:'cook',minH:1,maxH:2,name:isCn?'在家做饭':'Cooking at Home',desc:isCn?'健康实惠':'Healthy, budget-friendly',pr:0,en:5,hp:8,hap:6},
+    {cat:1,e:'🏪',id:'eatout',minH:1,maxH:1,name:isCn?'外出就餐':'Eat Outside',desc:isCn?'方便快捷':'Convenient, social',pr:0,en:6,hp:3,hap:6},
+    {cat:1,e:'🙈',id:'skipmeal',minH:0,maxH:0,name:isCn?'不吃饭（赶时间）':'Skip Meal (busy)',desc:isCn?'节省时间但健康受损':'Saves time, hurts health',pr:0,en:-8,hp:-10,hap:-5},
+    // SPORTS cat:2
+    {cat:2,e:'🏃',id:'run',minH:1,maxH:3,name:isCn?'跑步':'Running',desc:isCn?'有氧运动精力大涨':'Great cardio boost',pr:-2,en:10,hp:12,hap:8},
+    {cat:2,e:'🚶',id:'walk',minH:1,maxH:5,name:isCn?'散步':'Walking',desc:isCn?'轻松休闲':'Light, relaxing',pr:0,en:4,hp:5,hap:6},
+    {cat:2,e:'⚽',id:'football',minH:1,maxH:3,name:isCn?'踢足球':'Football',desc:isCn?'团队运动双赢':'Team sport, health + social',pr:-2,en:8,hp:12,hap:10},
+    {cat:2,e:'🏀',id:'basketball',minH:1,maxH:3,name:isCn?'打篮球':'Basketball',desc:isCn?'燃烧卡路里':'Burn calories, make friends',pr:-2,en:8,hp:12,hap:10},
+    {cat:2,e:'🏸',id:'badminton',minH:1,maxH:3,name:isCn?'打羽毛球':'Badminton',desc:isCn?'轻盈灵活':'Agile, great coordination',pr:-1,en:6,hp:10,hap:8},
+    {cat:2,e:'🏓',id:'pingpong',minH:1,maxH:3,name:isCn?'打乒乓球':'Table Tennis',desc:isCn?'反应+专注':'Reflexes + focus',pr:1,en:5,hp:8,hap:8},
+    {cat:2,e:'🎾',id:'tennis',minH:1,maxH:3,name:isCn?'打网球':'Tennis',desc:isCn?'全身运动':'Full-body workout',pr:-1,en:7,hp:11,hap:7},
+    {cat:2,e:'💪',id:'gym',minH:1,maxH:3,name:isCn?'健身房锻炼':'Gym Workout',desc:isCn?'力量训练':'Strength training',pr:-1,en:7,hp:14,hap:7},
+    {cat:2,e:'🚴',id:'cycling',minH:1,maxH:4,name:isCn?'骑自行车':'Cycling',desc:isCn?'环保出行':'Eco-friendly leg workout',pr:0,en:6,hp:10,hap:7},
+    {cat:2,e:'🧘',id:'yoga',minH:1,maxH:2,name:isCn?'瑜伽/拉伸':'Yoga / Stretching',desc:isCn?'放松身心':'Calm body and mind',pr:1,en:8,hp:8,hap:9},
+    // CAMPUS LIFE cat:3
+    {cat:3,e:'👫',id:'social',minH:1,maxH:4,name:isCn?'和朋友社交':'Socializing with Friends',desc:isCn?'放松心情':'Relax and bond',pr:-2,en:4,hp:1,hap:12},
+    {cat:3,e:'🎓',id:'class',minH:1,maxH:6,name:isCn?'上课':'Attending Class',desc:isCn?'认真听课':'Pay attention, boost grades',pr:10,en:-5,hp:0,hap:1},
+    {cat:3,e:'😴',id:'rest',minH:1,maxH:8,name:isCn?'休息/睡觉':'Resting / Sleeping',desc:isCn?'恢复精力':'Essential recovery',pr:-1,en:16,hp:5,hap:4},
+    {cat:3,e:'💻',id:'online',minH:1,maxH:5,name:isCn?'在线看讲座':'Watching Lectures Online',desc:isCn?'灵活学习':'Flexible learning',pr:6,en:-3,hp:0,hap:2},
+    {cat:3,e:'🎮',id:'gaming',minH:1,maxH:5,name:isCn?'游戏/娱乐':'Gaming / Entertainment',desc:isCn?'快乐多别沉迷':'Fun, but watch the time!',pr:-5,en:2,hp:-1,hap:10},
+    {cat:3,e:'🎨',id:'club',minH:1,maxH:4,name:isCn?'社团活动':'Club / Student Society',desc:isCn?'拓展人脉':'Expand network, new skills',pr:2,en:-2,hp:0,hap:10},
+    {cat:3,e:'🔬',id:'project',minH:1,maxH:5,name:isCn?'图书馆研究/项目':'Library Research / Project',desc:isCn?'深度研究':'Deep research, academic bonus',pr:11,en:-5,hp:-1,hap:1},
+    {cat:3,e:'💼',id:'job',minH:1,maxH:6,name:isCn?'兼职工作':'Part-time Job',desc:isCn?'增加收入但很累':'Income + responsibility, tiring',pr:3,en:-8,hp:-2,hap:2},
+    {cat:3,e:'🎪',id:'event',minH:1,maxH:4,name:isCn?'校园活动/节日':'Campus Events / Festivals',desc:isCn?'开心热闹':'Fun events, campus spirit',pr:1,en:-2,hp:0,hap:12},
+    {cat:3,e:'📋',id:'profhrs',minH:1,maxH:2,name:isCn?'见教授/答疑':'Meeting Professor',desc:isCn?'解决疑问学术+':'Get answers, academic boost',pr:8,en:-2,hp:0,hap:3},
+    {cat:3,e:'🛠',id:'skill',minH:1,maxH:6,name:isCn?'技能学习（编程/设计/语言）':'Skill Learning (Coding/Design/Language)',desc:isCn?'投资未来':'Invest in your future',pr:7,en:-4,hp:0,hap:5}
+  ];
+
+  var CATS = isCn
+    ? ['📚 学习','🍽️ 饮食','🏃 运动','🧠 校园生活']
+    : ['📚 Study','🍽️ Meals','🏃 Sports','🧠 Campus Life'];
+
+  // Build the HTML as plain string - no nested backticks
+  var h = '';
+  h += '<!DOCTYPE html><html><head><meta charset="UTF-8">';
+  h += '<meta name="viewport" content="width=device-width,initial-scale=1">';
+  h += '<style>';
+  h += '*{margin:0;padding:0;box-sizing:border-box}';
+  h += 'body{font-family:Segoe UI,system-ui,sans-serif;background:#fff;color:#0a0a0a;min-height:100%;padding:14px}';
+  h += '.hdr{text-align:center;margin-bottom:14px}';
+  h += '.hdr h2{font-size:17px;color:#CC0000;margin-bottom:3px}';
+  h += '.hdr p{font-size:11px;color:#666}';
+  h += '.time-bar-wrap{background:#f5f5f5;border-radius:12px;padding:10px 14px;margin-bottom:12px;border:1px solid #ddd}';
+  h += '.time-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}';
+  h += '.time-lbl{font-size:11px;color:#666}';
+  h += '.time-val{font-size:18px;font-weight:700;color:#CC0000}';
+  h += '.time-track{height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden}';
+  h += '.time-fill{height:100%;background:linear-gradient(90deg,#22c55e,#CC0000,#ef4444);border-radius:4px;transition:width .3s}';
+  h += '.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}';
+  h += '.stat-box{background:#f5f5f5;border-radius:10px;padding:8px 4px;text-align:center;border:1px solid #ddd}';
+  h += '.stat-lbl{font-size:9px;color:#666;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
+  h += '.stat-bar-wrap{height:5px;background:#ddd;border-radius:3px;margin:3px 4px;overflow:hidden}';
+  h += '.stat-bar{height:100%;border-radius:3px;transition:width .4s,background .4s}';
+  h += '.stat-num{font-size:13px;font-weight:700;color:#CC0000}';
+  h += '.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}';
+  h += '.cat-tab{padding:6px 12px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;color:#333}';
+  h += '.cat-tab.active{background:#CC0000;border-color:#CC0000;color:#fff}';
+  h += '.cat-tab:hover{background:#fdecea;border-color:#CC0000;color:#CC0000}';
+  h += '.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}';
+  h += '@media(max-width:560px){.cols{grid-template-columns:1fr}}';
+  h += '.panel{background:#fff;border-radius:12px;border:1px solid #e0e0e0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}';
+  h += '.panel-head{padding:9px 12px;font-size:11px;font-weight:600;color:#CC0000;border-bottom:1px solid #e0e0e0;background:#f5f5f5;display:flex;justify-content:space-between;align-items:center}';
+  h += '.act-list{max-height:380px;overflow-y:auto}';
+  h += '.act-item{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s}';
+  h += '.act-item:hover{background:#fdecea}';
+  h += '.act-em{font-size:20px;flex-shrink:0;margin-top:2px}';
+  h += '.act-info{flex:1;min-width:0}';
+  h += '.act-name{font-size:12px;font-weight:600;color:#0a0a0a;margin-bottom:1px}';
+  h += '.act-desc{font-size:9px;color:#777;line-height:1.3;margin-bottom:4px}';
+  h += '.act-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px}';
+  h += '.tag{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600}';
+  h += '.tag-pos{background:rgba(100,220,100,.2);color:#88ee88}';
+  h += '.tag-neg{background:rgba(255,80,80,.15);color:#ff8888}';
+  h += '.act-bottom{display:flex;align-items:center;gap:6px;flex-wrap:wrap}';
+  h += '.hour-sel{background:#fff;border:1px solid #ccc;color:#333;border-radius:6px;padding:3px 6px;font-size:10px;cursor:pointer}';
+  h += '.add-btn{font-size:10px;padding:4px 10px;border-radius:6px;border:1px solid #CC0000;background:#CC0000;color:#fff;cursor:pointer;font-weight:600}';
+  h += '.add-btn:hover{background:rgba(204,0,0,0.3)}';
+  h += '.dur-lbl{font-size:9px;color:#999}';
+  h += '.sched-list{max-height:380px;overflow-y:auto;padding:6px}';
+  h += '.sched-item{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;background:#fdecea;border:1px solid #f5c6c6;margin-bottom:5px}';
+  h += '.sched-em{font-size:16px}';
+  h += '.sched-name{font-size:11px;font-weight:600;flex:1;line-height:1.3;color:#0a0a0a}';
+  h += '.sched-h{font-size:10px;color:#CC0000;white-space:nowrap}';
+  h += '.sched-del{font-size:12px;cursor:pointer;color:rgba(255,80,80,.6);padding:2px 5px;border:none;background:none}';
+  h += '.sched-del:hover{color:#ff4444}';
+  h += '.empty-msg{font-size:11px;color:#aaa;text-align:center;padding:24px 10px}';
+  h += '.end-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#CC0000,#880000);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:6px}';
+  h += '.end-btn:hover:not([disabled]){background:linear-gradient(135deg,#EE1111,#AA0000);transform:translateY(-1px)}';
+  h += '.end-btn[disabled]{opacity:.35;pointer-events:none}';
+  h += '.report{display:none;padding-top:4px}';
+  h += '.rep-title{font-size:16px;font-weight:700;color:#CC0000;text-align:center;margin-bottom:14px}';
+  h += '.rep-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}';
+  h += '.rep-stat{background:#f5f5f5;border-radius:12px;padding:14px 12px;border:1px solid #ddd;text-align:center}';
+  h += '.rep-icon{font-size:24px;margin-bottom:4px}';
+  h += '.rep-name{font-size:10px;color:#666;margin-bottom:6px}';
+  h += '.rep-bar-wrap{height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;margin-bottom:5px}';
+  h += '.rep-bar{height:100%;border-radius:4px;transition:width 1s}';
+  h += '.rep-num{font-size:24px;font-weight:800;color:#CC0000}';
+  h += '.rep-grade{font-size:10px;margin-top:2px}';
+  h += '.score-box{background:#fdecea;border:1px solid #f5c6c6;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px}';
+  h += '.score-big{font-size:40px;font-weight:900;color:#CC0000}';
+  h += '.score-lbl{font-size:11px;color:#666;margin-top:2px}';
+  h += '.recap{background:#f5f5f5;border-radius:10px;padding:12px;margin-bottom:14px}';
+  h += '.recap-title{font-size:10px;color:#CC0000;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}';
+  h += '.recap-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#333;margin-bottom:5px}';
+  h += '.tips-wrap{margin-bottom:14px}';
+  h += '.tips-title{font-size:10px;color:#CC0000;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}';
+  h += '.tip-card{display:flex;gap:10px;align-items:flex-start;background:#f9f9f9;border-radius:11px;padding:11px 12px;margin-bottom:7px;border-left:3px solid #ccc}';
+  h += '.tip-card.warn{border-left-color:#CC0000;background:#fdecea}';
+  h += '.tip-card.ok{border-left-color:#22c55e;background:#f0faf0}';
+  h += '.tip-card.info{border-left-color:#CC0000;background:#fdecea}';
+  h += '.tip-em{font-size:20px;flex-shrink:0}';
+  h += '.tip-head{font-size:12px;font-weight:700;color:#0a0a0a;margin-bottom:3px}';
+  h += '.tip-text{font-size:11px;color:#555;line-height:1.55}';
+  h += '.ai-box{background:#f5f5f5;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:14px;font-size:12px;color:#333;line-height:1.7;white-space:pre-wrap}';
+  h += '.ai-label{font-size:10px;color:#CC0000;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}';
+  h += '.spinner{width:26px;height:26px;border:3px solid #ddd;border-top-color:#CC0000;border-radius:50%;animation:spin .8s linear infinite;margin:10px auto}';
+  h += '@keyframes spin{to{transform:rotate(360deg)}}';
+  h += '.replay-btn{width:100%;padding:12px;border-radius:10px;border:1px solid #CC0000;background:#fff;color:#CC0000;font-size:13px;font-weight:700;cursor:pointer}';
+  h += '.replay-btn:hover{background:#fdecea}';
+  h += '::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}';
+  h += '</style></head><body>';
+
+  // HTML structure
+  h += '<div class="hdr">';
+  h += '<h2>' + (isCn ? '🎓 校园生活模拟器' : '🎓 Campus Life Simulator') + '</h2>';
+  h += '<p>' + (isCn ? '规划你的一天 — 最多24小时，选择活动，查看成绩单' : 'Plan your day — up to 24 hours · Build your schedule · See your results') + '</p>';
+  h += '</div>';
+
+  h += '<div class="time-bar-wrap">';
+  h += '<div class="time-row">';
+  h += '<span class="time-lbl">⏰ ' + (isCn ? '已用时间' : 'Time Used') + '</span>';
+  h += '<span class="time-val" id="timeUsedVal">0h</span>';
+  h += '<span class="time-lbl" id="timeLeftLbl">' + (isCn ? '剩余: 24h' : 'Left: 24h') + '</span>';
+  h += '</div>';
+  h += '<div class="time-track"><div class="time-fill" id="timeFill" style="width:0%"></div></div>';
+  h += '</div>';
+
+  h += '<div class="stats-row" id="statsRow"></div>';
+
+  h += '<div id="mainView">';
+  h += '<div class="cat-tabs" id="catTabs"></div>';
+  h += '<div class="cols">';
+  h += '<div class="panel"><div class="panel-head">';
+  h += '<span>🎯 ' + (isCn ? '选择活动' : 'Choose Activity') + '</span>';
+  h += '<span id="catBadge" style="font-size:10px;color:rgba(204,0,0,0.5)"></span>';
+  h += '</div><div class="act-list" id="actList"></div></div>';
+  h += '<div class="panel"><div class="panel-head">';
+  h += '<span>📋 ' + (isCn ? '今日日程' : "Today's Schedule") + '</span>';
+  h += '<span id="schedCount" style="font-size:10px;color:rgba(204,0,0,0.5)">0 ' + (isCn ? '项' : 'items') + '</span>';
+  h += '</div><div class="sched-list" id="schedList"></div></div>';
+  h += '</div>';
+  h += '<button class="end-btn" id="endBtn" onclick="endDay()" disabled>' + (isCn ? '📊 结束今天，查看报告' : '📊 End Day & See Report') + '</button>';
+  h += '</div>';
+
+  h += '<div class="report" id="reportView">';
+  h += '<div class="rep-title">' + (isCn ? '📊 今日成绩单' : '📊 Daily Performance Report') + '</div>';
+  h += '<div class="rep-grid" id="repGrid"></div>';
+  h += '<div class="score-box"><div class="score-big" id="overallScore">—</div>';
+  h += '<div class="score-lbl">' + (isCn ? '综合评分 | 均衡发展指数' : 'Overall Score | Balance Index') + '</div></div>';
+  h += '<div class="recap" id="schedRecap"></div>';
+  h += '<div class="tips-wrap" id="smartTips"></div>';
+  h += '<div class="ai-box" id="aiBox"><div class="ai-label">' + (isCn ? '🤖 AI 建议' : '🤖 AI Advice') + '</div>';
+  h += '<div class="spinner" id="aiSpinner"></div><div id="aiText" style="display:none"></div></div>';
+  h += '<button class="replay-btn" onclick="restart()">🔄 ' + (isCn ? '重新规划' : 'Plan Again') + '</button>';
+  h += '</div>';
+
+  // Inject data as JS variables (safe - no nested template literals)
+  h += '<script>';
+  h += 'var ACTS=' + JSON.stringify(ACTS) + ';';
+  h += 'var CATS=' + JSON.stringify(CATS) + ';';
+  h += 'var isCn=' + (isCn ? 'true' : 'false') + ';';
+  h += 'var MAX_H=24,usedH=0,schedule=[],currentCat=0;';
+  h += 'var stats={pr:0,en:50,hp:50,hap:50};';
+
+  h += 'function clamp(v){return Math.max(0,Math.min(100,v));}';
+  h += 'function statColor(v){return v>=70?"#22c55e":v>=40?"#CC0000":"#ef4444";}';
+
+  h += 'function renderStats(){';
+  h += 'var labels=isCn?["📈 学习效率","⚡ 精力","🏋️ 健康","😊 快乐"]:["📈 Productivity","⚡ Energy","🏋️ Health","😊 Happiness"];';
+  h += 'var vals=[stats.pr,stats.en,stats.hp,stats.hap];';
+  h += 'var out="";';
+  h += 'for(var i=0;i<4;i++){var pct=Math.max(0,Math.min(100,vals[i]));';
+  h += 'out+=\'<div class="stat-box"><div class="stat-lbl">\'+labels[i]+\'</div><div class="stat-bar-wrap"><div class="stat-bar" style="width:\'+pct+\'%;background:\'+statColor(pct)+\'"></div></div><div class="stat-num">\'+pct+\'</div></div>\';}';
+  h += 'document.getElementById("statsRow").innerHTML=out;}';
+
+  h += 'function renderCatTabs(){';
+  h += 'var out="";';
+  h += 'for(var i=0;i<CATS.length;i++){out+=\'<div class="cat-tab\'+(i===currentCat?" active":"")+\'" onclick="switchCat(\'+i+\')">\'+ CATS[i]+\'</div>\';}';
+  h += 'document.getElementById("catTabs").innerHTML=out;}';
+
+  h += 'function switchCat(i){currentCat=i;renderCatTabs();renderActList();}';
+
+  h += 'function makeHourSel(a,idx){';
+  h += 'if(a.minH===0&&a.maxH===0)return "";';
+  h += 'if(a.minH===a.maxH)return "";';
+  h += 'var s=\'<select class="hour-sel" id="hs_\'+idx+\'">\';';
+  h += 'for(var hh=a.minH;hh<=a.maxH;hh++)s+=\'<option value="\'+hh+\'">\'+hh+"h</option>";';
+  h += 's+="</select>";return s;}';
+
+  h += 'function renderActList(){';
+  h += 'var filtered=[];';
+  h += 'for(var i=0;i<ACTS.length;i++){if(ACTS[i].cat===currentCat)filtered.push({a:ACTS[i],i:i});}';
+  h += 'document.getElementById("catBadge").textContent=filtered.length+(isCn?" 个活动":" activities");';
+  h += 'if(!filtered.length){document.getElementById("actList").innerHTML=\'<div class="empty-msg">—</div>\';return;}';
+  h += 'var out="";';
+  h += 'for(var k=0;k<filtered.length;k++){';
+  h += 'var a=filtered[k].a,idx=filtered[k].i;';
+  h += 'var tags="";';
+  h += 'if(a.pr>0)tags+=\'<span class="tag tag-pos">📈+\'+a.pr+"</span>";';
+  h += 'if(a.pr<0)tags+=\'<span class="tag tag-neg">📈\'+a.pr+"</span>";';
+  h += 'if(a.en>0)tags+=\'<span class="tag tag-pos">⚡+\'+a.en+"</span>";';
+  h += 'if(a.en<0)tags+=\'<span class="tag tag-neg">⚡\'+a.en+"</span>";';
+  h += 'if(a.hp>0)tags+=\'<span class="tag tag-pos">🏋️+\'+a.hp+"</span>";';
+  h += 'if(a.hp<0)tags+=\'<span class="tag tag-neg">🏋️\'+a.hp+"</span>";';
+  h += 'if(a.hap>0)tags+=\'<span class="tag tag-pos">😊+\'+a.hap+"</span>";';
+  h += 'if(a.hap<0)tags+=\'<span class="tag tag-neg">😊\'+a.hap+"</span>";';
+  h += 'var dur=a.minH===0&&a.maxH===0?(isCn?"即时":"instant"):(a.minH===a.maxH?a.minH+"h":a.minH+"-"+a.maxH+"h");';
+  h += 'var hs=makeHourSel(a,idx);';
+  h += 'var addTxt=isCn?"加入":"Add";';
+  h += 'if(a.minH===a.maxH)addTxt+=" ("+(a.minH||0)+"h)";';
+  h += 'out+=\'<div class="act-item"><div class="act-em">\'+a.e+\'</div><div class="act-info">\';';
+  h += 'out+=\'<div class="act-name">\'+a.name+\'</div>\';';
+  h += 'out+=\'<div class="act-desc">\'+a.desc+\'</div>\';';
+  h += 'out+=\'<div class="act-tags">\'+tags+\'</div>\';';
+  h += 'out+=\'<div class="act-bottom">\'+hs+\'<button class="add-btn" onclick="addAct(\'+idx+\')">\'+addTxt+\'</button><span class="dur-lbl">⏱ \'+dur+\'</span></div>\';';
+  h += 'out+="</div></div>";}';
+  h += 'document.getElementById("actList").innerHTML=out;}';
+
+  h += 'function renderSched(){';
+  h += 'var el=document.getElementById("schedList");';
+  h += 'var cnt=document.getElementById("schedCount");';
+  h += 'cnt.textContent=schedule.length+(isCn?" 项":" items");';
+  h += 'if(!schedule.length){el.innerHTML=\'<div class="empty-msg">\'+(isCn?"（还没有安排）":"(nothing added yet)")+"</div>";return;}';
+  h += 'var out="";';
+  h += 'for(var i=0;i<schedule.length;i++){var a=schedule[i];';
+  h += 'out+=\'<div class="sched-item"><span class="sched-em">\'+a.e+\'</span><span class="sched-name">\'+a.name+\'</span><span class="sched-h">\'+a.h+\'h</span><button class="sched-del" onclick="removeAct(\'+i+\')">✕</button></div>\';}';
+  h += 'el.innerHTML=out;}';
+
+  h += 'function updateTimeBar(){';
+  h += 'var pct=Math.min(100,usedH/MAX_H*100);';
+  h += 'document.getElementById("timeFill").style.width=pct+"%";';
+  h += 'document.getElementById("timeUsedVal").textContent=usedH+"h";';
+  h += 'document.getElementById("timeLeftLbl").textContent=(isCn?"剩余: ":"Left: ")+(MAX_H-usedH)+"h";';
+  h += 'document.getElementById("endBtn").disabled=schedule.length===0;}';
+
+  h += 'function addAct(idx){';
+  h += 'var a=ACTS[idx];';
+  h += 'var hSel=document.getElementById("hs_"+idx);';
+  h += 'var hh=hSel?parseInt(hSel.value):(a.minH||0);';
+  h += 'if(usedH+hh>MAX_H){alert(isCn?"时间不够了！最多24小时。":"No time left! Max 24 hours.");return;}';
+  h += 'usedH+=hh;';
+  h += 'var mult=hh||1;';
+  h += 'schedule.push({e:a.e,name:a.name,h:hh,pr:a.pr,en:a.en,hp:a.hp,hap:a.hap});';
+  h += 'stats.pr=clamp(stats.pr+a.pr*mult);';
+  h += 'stats.en=clamp(stats.en+a.en*mult);';
+  h += 'stats.hp=clamp(stats.hp+a.hp*mult);';
+  h += 'stats.hap=clamp(stats.hap+a.hap*mult);';
+  h += 'renderStats();renderSched();updateTimeBar();}';
+
+  h += 'function removeAct(i){';
+  h += 'var a=schedule[i];';
+  h += 'usedH-=a.h;var mult=a.h||1;';
+  h += 'stats.pr=clamp(stats.pr-a.pr*mult);';
+  h += 'stats.en=clamp(stats.en-a.en*mult);';
+  h += 'stats.hp=clamp(stats.hp-a.hp*mult);';
+  h += 'stats.hap=clamp(stats.hap-a.hap*mult);';
+  h += 'schedule.splice(i,1);';
+  h += 'renderStats();renderSched();updateTimeBar();}';
+
+  h += 'function buildTips(pr,en,hp,hap){';
+  h += 'var tips=[];';
+  h += 'if(en<30)tips.push({t:"warn",em:"⚡",head:isCn?"精力告急！":"Energy Critical!",body:isCn?"今晚务必早睡，好好吃饭！":"Get proper sleep tonight and eat well!"});';
+  h += 'else if(en>=75)tips.push({t:"ok",em:"🔥",head:isCn?"精力满满！":"Great Energy!",body:isCn?"今天精力管理很好，继续保持！":"Excellent energy management today!"});';
+  h += 'if(hp<30)tips.push({t:"warn",em:"🏋️",head:isCn?"健康告急！":"Health Warning!",body:isCn?"多注意饮食、运动和休息！":"Prioritize meals, exercise and rest!"});';
+  h += 'else if(hp>=75)tips.push({t:"ok",em:"💪",head:isCn?"健康状态优秀！":"Excellent Health!",body:isCn?"你很好地照顾了自己的身体！":"You took great care of your body today!"});';
+  h += 'if(pr<30)tips.push({t:"warn",em:"📈",head:isCn?"学习效率偏低":"Low Productivity",body:isCn?"明天试着加入图书馆自习或上课！":"Try adding library study or class tomorrow!"});';
+  h += 'else if(pr>=75)tips.push({t:"ok",em:"🎓",head:isCn?"学霸模式开启！":"Scholar Mode!",body:isCn?"学习效率极高！记得劳逸结合。":"Outstanding productivity! Balance with rest."});';
+  h += 'if(hap<30)tips.push({t:"warn",em:"😊",head:isCn?"开心指数偏低":"Low Happiness",body:isCn?"明天试着和朋友聊聊天或参加社团！":"Try socializing or joining a club event!"});';
+  h += 'else if(hap>=75)tips.push({t:"ok",em:"🌟",head:isCn?"心情超棒！":"Great Happiness!",body:isCn?"积极的心态是高效学习的重要组成部分。":"A positive mindset fuels academic success!"});';
+  h += 'var allGood=pr>=55&&en>=55&&hp>=55&&hap>=55;';
+  h += 'var allLow=pr<35&&en<35&&hp<35&&hap<35;';
+  h += 'if(allGood)tips.push({t:"ok",em:"🏆",head:isCn?"全面均衡，完美一天！":"Perfectly Balanced Day!",body:isCn?"各项指标都很好，非常棒！":"All four stats are in great shape!"});';
+  h += 'if(allLow)tips.push({t:"warn",em:"⚠️",head:isCn?"整体偏低，明天加油！":"Tough Day — Fresh Start Tomorrow",body:isCn?"从明天的早饭和运动开始，一步一步来！":"Start fresh tomorrow with a good breakfast!"});';
+  h += 'if(!tips.length)tips.push({t:"info",em:"😊",head:isCn?"还不错的一天！":"A Solid Day!",body:isCn?"今天的安排比较均衡，继续保持！":"Your day was reasonably balanced. Keep it up!"});';
+  h += 'var out=\'<div class="tips-title">💡 \'+(isCn?"今日建议":"Smart Suggestions")+"</div>";';
+  h += 'for(var i=0;i<tips.length;i++){var t=tips[i];';
+  h += 'out+=\'<div class="tip-card \'+t.t+\'"><div class="tip-em">\'+t.em+\'</div><div><div class="tip-head">\'+t.head+\'</div><div class="tip-text">\'+t.body+"</div></div></div>";}';
+  h += 'return out;}';
+
+  h += 'async function endDay(){';
+  h += 'document.getElementById("mainView").style.display="none";';
+  h += 'document.getElementById("reportView").style.display="block";';
+  h += 'var labels=isCn?[["📈","学习效率"],["⚡","精力"],["🏋️","健康"],["😊","快乐"]]:';
+  h += '[["📈","Productivity"],["⚡","Energy"],["🏋️","Health"],["😊","Happiness"]];';
+  h += 'var vals=[Math.max(0,Math.min(100,stats.pr)),Math.max(0,Math.min(100,stats.en)),Math.max(0,Math.min(100,stats.hp)),Math.max(0,Math.min(100,stats.hap))];';
+  h += 'function grade(v){return v>=80?(isCn?"优秀":"Excellent"):v>=60?(isCn?"良好":"Good"):v>=40?(isCn?"一般":"Average"):(isCn?"较差":"Poor");}';
+  h += 'var out="";';
+  h += 'for(var i=0;i<4;i++){var v=vals[i];';
+  h += 'out+=\'<div class="rep-stat"><div class="rep-icon">\'+labels[i][0]+\'</div><div class="rep-name">\'+labels[i][1]+\'</div>\';';
+  h += 'out+=\'<div class="rep-bar-wrap"><div class="rep-bar" id="rbar\'+i+\'" style="width:0%;background:\'+statColor(v)+\'"></div></div>\';';
+  h += 'out+=\'<div class="rep-num">\'+v+\'%</div><div class="rep-grade" style="color:\'+statColor(v)+\'">\'+grade(v)+\'</div></div>\';}';
+  h += 'document.getElementById("repGrid").innerHTML=out;';
+  h += 'setTimeout(function(){for(var i=0;i<4;i++)document.getElementById("rbar"+i).style.width=vals[i]+"%";},120);';
+  h += 'var avg=Math.round((vals[0]+vals[1]+vals[2]+vals[3])/4);';
+  h += 'var spread=Math.max(vals[0],vals[1],vals[2],vals[3])-Math.min(vals[0],vals[1],vals[2],vals[3]);';
+  h += 'document.getElementById("overallScore").textContent=Math.max(0,avg-Math.round(spread*.25))+"%";';
+  h += 'var recapOut=\'<div class="recap-title">\'+(isCn?"今日日程回顾":"Your Schedule")+"</div>";';
+  h += 'for(var i=0;i<schedule.length;i++){var a=schedule[i];';
+  h += 'recapOut+=\'<div class="recap-item"><span>\'+a.e+\'</span><span>\'+a.name+\'</span><span style="margin-left:auto;color:rgba(204,0,0,0.5)">\'+a.h+\'h</span></div>\';}';
+  h += 'document.getElementById("schedRecap").innerHTML=recapOut;';
+  h += 'document.getElementById("smartTips").innerHTML=buildTips(vals[0],vals[1],vals[2],vals[3]);';
+  h += 'var summary=schedule.map(function(a){return a.name+"("+a.h+"h)";}).join(", ");';
+  h += 'var prompt=(isCn?"用中文回复。一位西电大学生今天安排了：":"Reply in English. A Xidian University student planned: ")+summary+';
+  h += '(isCn?"。最终数值 — 学习效率:"+vals[0]+"%, 精力:"+vals[1]+"%, 健康:"+vals[2]+"%, 快乐:"+vals[3]+"%. 请给出3条简短温暖的建议（每条2-3句），用emoji，鼓励且实用。":';
+  h += '". Final stats — Productivity:"+vals[0]+"%, Energy:"+vals[1]+"%, Health:"+vals[2]+"%, Happiness:"+vals[3]+"%. Give 3 short warm tips (2-3 sentences each). Use emoji. Be encouraging.");';
+  h += 'try{';
+  h += 'var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":"YOUR_API_KEY_HERE","anthropic-version":"2023-06-01"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:400,messages:[{role:"user",content:prompt}]})});';
+  h += 'var d=await r.json();';
+  h += 'var txt=(d.content||[]).map(function(c){return c.text||"";}).join("");';
+  h += 'document.getElementById("aiSpinner").style.display="none";';
+  h += 'document.getElementById("aiText").style.display="block";';
+  h += 'document.getElementById("aiText").textContent=txt||(isCn?"🌟 今天做得很好，继续加油！":"🌟 Great effort today! Keep it up!");';
+  h += '}catch(e){';
+  h += 'document.getElementById("aiSpinner").style.display="none";';
+  h += 'document.getElementById("aiText").style.display="block";';
+  h += 'document.getElementById("aiText").textContent=isCn?"🌟 你今天的努力已经被记录！":"🌟 Great effort today! Keep planning smart!";}}';
+
+  h += 'function restart(){';
+  h += 'usedH=0;schedule=[];stats={pr:0,en:50,hp:50,hap:50};';
+  h += 'document.getElementById("mainView").style.display="block";';
+  h += 'document.getElementById("reportView").style.display="none";';
+  h += 'renderCatTabs();renderActList();renderSched();renderStats();updateTimeBar();}';
+
+  h += 'renderCatTabs();renderActList();renderSched();renderStats();updateTimeBar();';
+  h += 'setInterval(function(){try{parent.postMessage({iframeHeight:document.body.scrollHeight+30},"*");}catch(e){}},600);';
+  h += '<\/script></body></html>';
+
+  return h;
+}
+
+
+function buildGame2(lang) {
+  {
+    const isCn = lang==='cn';
+
+    // 10 questions — each option maps to a personality type: academic, tech, creative, social, balanced
+    const questions = isCn ? [
+      { q:'📍 你最喜欢在哪里学习？', opts:[
+        {t:'📚 图书馆', k:'academic'},
+        {t:'🔬 实验室', k:'tech'},
+        {t:'☕ 咖啡馆', k:'creative'},
+        {t:'👯 和朋友一起', k:'social'}
+      ]},
+      { q:'🌟 什么最让你兴奋？', opts:[
+        {t:'🏆 取得优异成绩', k:'academic'},
+        {t:'🛠️ 搭建项目', k:'tech'},
+        {t:'🎨 创造新事物', k:'creative'},
+        {t:'🤝 结交新朋友', k:'social'}
+      ]},
+      { q:'🏖️ 你理想的周末是？', opts:[
+        {t:'📖 复习功课', k:'academic'},
+        {t:'💻 编程/做实验', k:'tech'},
+        {t:'🖌️ 绘画/设计', k:'creative'},
+        {t:'🎉 和朋友出去玩', k:'social'}
+      ]},
+      { q:'✨ 哪个词最能形容你？', opts:[
+        {t:'🎯 专注', k:'academic'},
+        {t:'🔍 好奇', k:'tech'},
+        {t:'💡 富有想象力', k:'creative'},
+        {t:'😊 开朗外向', k:'social'}
+      ]},
+      { q:'🏫 你最常去校园哪个地方？', opts:[
+        {t:'📚 图书馆', k:'academic'},
+        {t:'🔬 实验楼', k:'tech'},
+        {t:'🎨 艺术/设计空间', k:'creative'},
+        {t:'🍜 食堂', k:'social'}
+      ]},
+      { q:'🧩 你如何解决问题？', opts:[
+        {t:'📕 深入研究', k:'academic'},
+        {t:'⚗️ 实验尝试', k:'tech'},
+        {t:'🌀 换个角度思考', k:'creative'},
+        {t:'🗣️ 请教他人', k:'social'}
+      ]},
+      { q:'🎓 你的大学目标是？', opts:[
+        {t:'📊 高绩点', k:'academic'},
+        {t:'🚀 推动创新', k:'tech'},
+        {t:'🖼️ 展现创造力', k:'creative'},
+        {t:'🌐 拓展人脉', k:'social'}
+      ]},
+      { q:'🌙 你的夜晚通常在做什么？', opts:[
+        {t:'📝 复习今日内容', k:'academic'},
+        {t:'💡 做项目', k:'tech'},
+        {t:'✏️ 创作新想法', k:'creative'},
+        {t:'💬 聊天/放松', k:'social'}
+      ]},
+      { q:'📖 你最擅长哪种学习方式？', opts:[
+        {t:'📚 阅读', k:'academic'},
+        {t:'🛠️ 动手实践', k:'tech'},
+        {t:'🎨 创作表达', k:'creative'},
+        {t:'👥 小组讨论', k:'social'}
+      ]},
+      { q:'🔥 什么最能激励你？', opts:[
+        {t:'🏅 成就感', k:'academic'},
+        {t:'💡 创新突破', k:'tech'},
+        {t:'🌈 自我表达', k:'creative'},
+        {t:'❤️ 人际连结', k:'social'}
+      ]}
+    ] : [
+      { q:'📍 Where do you prefer to study?', opts:[
+        {t:'📚 Library', k:'academic'},
+        {t:'🔬 Lab', k:'tech'},
+        {t:'☕ Café', k:'creative'},
+        {t:'👯 With friends', k:'social'}
+      ]},
+      { q:'🌟 What excites you most?', opts:[
+        {t:'🏆 Getting top grades', k:'academic'},
+        {t:'🛠️ Building projects', k:'tech'},
+        {t:'🎨 Creating something new', k:'creative'},
+        {t:'🤝 Meeting people', k:'social'}
+      ]},
+      { q:'🏖️ Your ideal weekend?', opts:[
+        {t:'📖 Study and review', k:'academic'},
+        {t:'💻 Coding / experimenting', k:'tech'},
+        {t:'🖌️ Drawing / designing', k:'creative'},
+        {t:'🎉 Hanging out', k:'social'}
+      ]},
+      { q:'✨ Which word describes you best?', opts:[
+        {t:'🎯 Focused', k:'academic'},
+        {t:'🔍 Curious', k:'tech'},
+        {t:'💡 Imaginative', k:'creative'},
+        {t:'😊 Outgoing', k:'social'}
+      ]},
+      { q:'🏫 Favorite campus place?', opts:[
+        {t:'📚 Library', k:'academic'},
+        {t:'🔬 Lab building', k:'tech'},
+        {t:'🎨 Art / design space', k:'creative'},
+        {t:'🍜 Cafeteria', k:'social'}
+      ]},
+      { q:'🧩 How do you solve problems?', opts:[
+        {t:'📕 Study deeply', k:'academic'},
+        {t:'⚗️ Experiment', k:'tech'},
+        {t:'🌀 Think differently', k:'creative'},
+        {t:'🗣️ Ask others', k:'social'}
+      ]},
+      { q:'🎓 Your goal in university?', opts:[
+        {t:'📊 High GPA', k:'academic'},
+        {t:'🚀 Build innovations', k:'tech'},
+        {t:'🖼️ Express creativity', k:'creative'},
+        {t:'🌐 Build a network', k:'social'}
+      ]},
+      { q:'🌙 What do you do at night?', opts:[
+        {t:'📝 Review lessons', k:'academic'},
+        {t:'💡 Work on projects', k:'tech'},
+        {t:'✏️ Create new ideas', k:'creative'},
+        {t:'💬 Chat / relax', k:'social'}
+      ]},
+      { q:'📖 How do you learn best?', opts:[
+        {t:'📚 Reading', k:'academic'},
+        {t:'🛠️ Doing', k:'tech'},
+        {t:'🎨 Creating', k:'creative'},
+        {t:'👥 Discussing', k:'social'}
+      ]},
+      { q:'🔥 What motivates you?', opts:[
+        {t:'🏅 Achievement', k:'academic'},
+        {t:'💡 Innovation', k:'tech'},
+        {t:'🌈 Expression', k:'creative'},
+        {t:'❤️ Connection', k:'social'}
+      ]}
+    ];
+
+    const PERSONALITIES = isCn ? {
+      academic: {
+        icon:'📚', name:'学术达人',
+        desc:'你是一位高度专注、热爱知识的学生。图书馆是你的第二个家，你以学业为重，追求卓越。',
+        tips:['善用高级学习资源','探索研究论文','尝试参加学术竞赛','别忘了适当休息，劳逸结合']
+      },
+      tech: {
+        icon:'🔬', name:'科技探索者',
+        desc:'你由好奇心和创新精神驱动，享受在实验室和工程挑战中探索AI与科技的无限可能。',
+        tips:['多去AI实验室', '加入科研项目','参加黑客马拉松','关注前沿技术动态']
+      },
+      creative: {
+        icon:'🎨', name:'创意思想家',
+        desc:'你用独特的眼光看世界，享受用创意表达想法。无论做什么，你都带着想象力与热情。',
+        tips:['加入艺术或设计社团','参加创意工作坊','用创意解读专业知识','探索跨学科项目']
+      },
+      social: {
+        icon:'🤝', name:'社交达人',
+        desc:'你在社交环境中如鱼得水，喜欢协作与团队合作。你为校园生活注入活力，建立广泛的人际网络。',
+        tips:['担任社团干部','参与校园活动策划','多参加团队项目','拓展跨专业人脉']
+      },
+      balanced: {
+        icon:'⚖️', name:'均衡发展型',
+        desc:'你在学习、创意和社交之间保持良好平衡。适应力强，各方面都有扎实的发展潜力。',
+        tips:['尝试不同类型的活动','制定兼顾各方面的计划','发掘自己真正热爱的领域','享受多元化的大学体验']
+      }
+    } : {
+      academic: {
+        icon:'📚', name:'Academic Achiever',
+        desc:'You are a highly focused student who values knowledge and discipline. The library is your second home, and you strive for academic excellence.',
+        tips:['Use advanced study resources','Explore research papers','Join academic competitions','Remember to rest — balance matters!']
+      },
+      tech: {
+        icon:'🔬', name:'Tech Explorer',
+        desc:'You are driven by curiosity and innovation. You enjoy working in labs and exploring AI and engineering challenges.',
+        tips:['Visit AI labs more often','Join research projects','Attend hackathons','Follow cutting-edge tech trends']
+      },
+      creative: {
+        icon:'🎨', name:'Creative Thinker',
+        desc:'You see the world differently and enjoy expressing ideas creatively. You bring imagination into everything you do.',
+        tips:['Join art or design clubs','Attend creative workshops','Blend creativity with your major','Explore interdisciplinary projects']
+      },
+      social: {
+        icon:'🤝', name:'Social Connector',
+        desc:'You thrive in social environments and enjoy collaboration. You build strong connections and bring energy to campus life.',
+        tips:['Take a leadership role in clubs','Help plan campus events','Join team projects','Build cross-department connections']
+      },
+      balanced: {
+        icon:'⚖️', name:'Balanced Student',
+        desc:'You maintain a healthy balance between study, creativity, and social life. You adapt well and have strong overall potential.',
+        tips:['Try a mix of different activities','Plan a schedule covering all areas','Discover what truly excites you','Enjoy the diversity of university life']
+      }
+    };
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#fff;color:#0a0a0a;min-height:100%;padding:20px}
+h2{font-size:17px;color:#CC0000;text-align:center;margin-bottom:4px}
+.subtitle{font-size:11px;color:#CC0000;text-align:center;margin-bottom:18px}
+.progress-bar{height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-bottom:20px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#CC0000,#CC0000);border-radius:3px;transition:width .4s}
+.q-num{font-size:11px;color:#CC0000;margin-bottom:8px;text-align:center}
+.q-text{font-size:15px;font-weight:700;color:#0a0a0a;text-align:center;margin-bottom:20px;line-height:1.5;padding:0 4px}
+.options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.opt-btn{padding:14px 18px;border-radius:14px;border:1.5px solid #ddd;background:#f5f5f5;color:#0a0a0a;font-size:13px;cursor:pointer;text-align:left;transition:all .2s;font-family:inherit;width:100%}
+.opt-btn:hover{background:#fdecea;border-color:#CC0000;transform:translateX(5px);box-shadow:0 4px 16px rgba(204,0,0,0.1)}
+/* RESULT */
+.result-wrap{display:none;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.result-card{background:rgba(0,0,0,0.45);border-radius:18px;border:1.5px solid #CC0000;padding:22px;margin-bottom:14px}
+.result-type-icon{font-size:52px;text-align:center;margin-bottom:10px}
+.result-type-name{font-size:20px;font-weight:800;color:#CC0000;text-align:center;margin-bottom:12px}
+.result-desc{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.75;text-align:center;margin-bottom:18px;padding:0 4px}
+.tips-title{font-size:10px;color:#CC0000;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.tip-item{display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px;margin-bottom:7px;border-left:3px solid #CC0000;font-size:12px;color:#333;opacity:0.8);line-height:1.5}
+.score-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:18px}
+.score-item{background:rgba(0,0,0,0.3);border-radius:12px;padding:10px;border:1px solid rgba(255,255,255,0.07);text-align:center}
+.score-item.winner{border-color:#CC0000;background:#fdecea}
+.score-icon{font-size:20px;margin-bottom:3px}
+.score-label{font-size:9px;color:#666;margin-bottom:5px}
+.score-bar-wrap{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.score-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,#CC0000,#CC0000);transition:width .8s ease}
+.score-num{font-size:16px;font-weight:800;color:#CC0000}
+.replay-btn{width:100%;padding:13px;border-radius:12px;border:1.5px solid #CC0000;background:#fff;color:#CC0000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.replay-btn:hover{background:#fdecea}
+</style></head><body>
+<h2>${isCn?'🎭 西电学生个性测试':'🎭 Xidian Student Personality Quiz'}</h2>
+<p class="subtitle">${isCn?'10道题，发现你的西电学生类型':'10 questions — discover your Xidian student type'}</p>
+<div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+
+<div id="quizArea">
+  <p class="q-num" id="qNum">1 / 10</p>
+  <p class="q-text" id="qText"></p>
+  <div class="options" id="optArea"></div>
+</div>
+
+<div class="result-wrap" id="resultWrap">
+  <div class="result-card">
+    <div class="result-type-icon" id="resIcon"></div>
+    <div class="result-type-name" id="resName"></div>
+    <div class="result-desc" id="resDesc"></div>
+    <div class="score-grid" id="scoreGrid"></div>
+    <div class="tips-title">💡 ${isCn?'专属推荐':'Campus Recommendations'}</div>
+    <div id="tipsList"></div>
+  </div>
+  <button class="replay-btn" onclick="restart()">🔄 ${isCn?'重新测试':'Take Quiz Again'}</button>
+</div>
+
+<script>
+const qs=${JSON.stringify(questions)};
+const PERS=${JSON.stringify(PERSONALITIES)};
+const TYPES=['academic','tech','creative','social'];
+const TYPE_ICONS={academic:'📚',tech:'🔬',creative:'🎨',social:'🤝',balanced:'⚖️'};
+const TYPE_LABELS=${isCn
+  ? JSON.stringify({academic:'学术达人',tech:'科技探索者',creative:'创意思想家',social:'社交达人',balanced:'均衡发展型'})
+  : JSON.stringify({academic:'Academic',tech:'Tech',creative:'Creative',social:'Social'})};
+let cur=0,scores={academic:0,tech:0,creative:0,social:0};
+
+function render(){
+  if(cur>=qs.length){showResult();return;}
+  document.getElementById('pFill').style.width=(cur/qs.length*100)+'%';
+  document.getElementById('qNum').textContent=(cur+1)+' / '+qs.length;
+  document.getElementById('qText').textContent=qs[cur].q;
+  document.getElementById('optArea').innerHTML=qs[cur].opts.map((o,i)=>
+    \`<button class="opt-btn" onclick="pick('\${o.k}')">\${o.t}</button>\`
+  ).join('');
+}
+
+function pick(key){
+  scores[key]=(scores[key]||0)+1;
+  cur++;render();
+}
+
+function showResult(){
+  document.getElementById('quizArea').style.display='none';
+  const rw=document.getElementById('resultWrap');
+  rw.style.display='block';
+
+  // Determine winner
+  const max=Math.max(...TYPES.map(t=>scores[t]));
+  const winners=TYPES.filter(t=>scores[t]===max);
+  const type=winners.length===1?winners[0]:'balanced';
+  const p=PERS[type];
+
+  document.getElementById('resIcon').textContent=p.icon;
+  document.getElementById('resName').textContent=p.icon+' '+p.name;
+  document.getElementById('resDesc').textContent=p.desc;
+
+  // Score bars
+  const total=Object.values(scores).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('scoreGrid').innerHTML=TYPES.map(t=>{
+    const pct=Math.round(scores[t]/total*100);
+    return \`<div class="score-item\${t===type?' winner':''}">
+      <div class="score-icon">\${TYPE_ICONS[t]}</div>
+      <div class="score-label">\${TYPE_LABELS[t]}</div>
+      <div class="score-bar-wrap"><div class="score-bar" id="sb_\${t}" style="width:0%"></div></div>
+      <div class="score-num">\${scores[t]}</div>
+    </div>\`;
+  }).join('');
+  setTimeout(()=>{TYPES.forEach(t=>{document.getElementById('sb_'+t).style.width=Math.round(scores[t]/total*100)+'%';});},80);
+
+  // Tips
+  document.getElementById('tipsList').innerHTML=p.tips.map(tip=>
+    \`<div class="tip-item">✅ \${tip}</div>\`
+  ).join('');
+}
+
+function restart(){
+  cur=0;scores={academic:0,tech:0,creative:0,social:0};
+  document.getElementById('quizArea').style.display='block';
+  document.getElementById('resultWrap').style.display='none';
+  render();
+}
+
+function reportHeight(){try{parent.postMessage({iframeHeight:document.body.scrollHeight+30},'*');}catch(e){}}
+setInterval(reportHeight,600);
+render();
+<\/script></body></html>`;
+  }
+}
+
+function buildGame3(lang) {
+  var isCn = lang === 'cn';
+  var pairs = isCn
+    ? [{e:'📚',n:'图书馆'},{e:'🔬',n:'实验室'},{e:'🍜',n:'食堂'},{e:'🏛️',n:'教学楼'},{e:'💻',n:'计算机'},{e:'⚽',n:'运动场'},{e:'🎓',n:'毕业帽'},{e:'🧪',n:'化学'}]
+    : [{e:'📚',n:'Library'},{e:'🔬',n:'Lab'},{e:'🍜',n:'Cafeteria'},{e:'🏛️',n:'Building'},{e:'💻',n:'Computer'},{e:'⚽',n:'Stadium'},{e:'🎓',n:'Graduation'},{e:'🧪',n:'Chemistry'}];
+
+  var title     = isCn ? '🃏 西电记忆卡牌'           : '🃏 Campus Memory Cards';
+  var subtitle  = isCn ? '先记住位置，再配对相同图标'  : 'Memorize positions, then match the pairs';
+  var lAtt      = isCn ? '尝试'   : 'Attempts';
+  var lMatch    = isCn ? '配对'   : 'Matched';
+  var lScore    = isCn ? '得分'   : 'Score';
+  var lTime     = isCn ? '时间'   : 'Time';
+  var lStart    = isCn ? '▶ 开始游戏'  : '▶ Start Game';
+  var lAgain    = isCn ? '🔄 再玩一次' : '🔄 Play Again';
+  var lMemo     = isCn ? '👀 记住位置！3秒后开始...' : '👀 Memorize! Starting in 3s...';
+  var lGo       = isCn ? '🎮 开始配对！'             : '🎮 Start matching!';
+  var lComplete = isCn ? '🎉 全部配对完成！游戏结束！' : '🎉 All pairs matched! Game complete!';
+  var lClickStart = isCn ? '点击开始游戏！' : 'Click Start to play!';
+  var lPts      = isCn ? '分'     : 'pts';
+  var lTimeLbl  = isCn ? '用时'   : 'Time';
+  var lAttLbl   = isCn ? '尝试'   : 'Attempts';
+  var aiLang    = isCn ? '用中文回答。' : 'Respond in English.';
+  var aiInstr   = isCn
+    ? '给出：1)创意记忆力类型标签，2)简短表现评价，3)一句激励的话。简洁有趣。'
+    : 'Give: 1) Creative memory type label, 2) Short performance review, 3) One motivational sentence. Fun and concise.';
+  var errMsg    = isCn ? '太棒了！继续保持！' : 'Excellent job! Keep it up!';
+
+  var pairsJson = JSON.stringify(pairs);
+
+  // Build the complete srcdoc HTML as a single string
+  var doc = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<style>'
+    + '*{margin:0;padding:0;box-sizing:border-box}'
+    + 'body{font-family:Segoe UI,sans-serif;background:#fff;color:#0a0a0a;padding:20px}'
+    + 'h2{font-size:17px;color:#CC0000;text-align:center;margin-bottom:4px}'
+    + '.sub{font-size:11px;color:#CC0000;text-align:center;margin-bottom:14px}'
+    + '.stats{display:flex;gap:10px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}'
+    + '.stat{background:rgba(0,0,0,.3);border-radius:10px;padding:8px 14px;font-size:11px;border:1px solid rgba(204,0,0,0.15);text-align:center;min-width:60px}'
+    + '.stat-val{display:block;font-size:20px;font-weight:700;color:#CC0000;line-height:1.2}'
+    + '.score-val{color:#00DD88!important}'
+    + '.phase{text-align:center;font-size:13px;color:#CC0000;margin-bottom:10px;min-height:22px;font-weight:600}'
+    + '.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}'
+    + '.card{aspect-ratio:1;border-radius:12px;cursor:pointer;perspective:600px}'
+    + '.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .4s}'
+    + '.card.flipped .card-inner{transform:rotateY(180deg)}'
+    + '.card-f,.card-b{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}'
+    + '.card-f{background:linear-gradient(135deg,#880000,#440000);border:2px solid rgba(204,0,0,0.3);font-size:24px;color:rgba(0,0,0,.2)}'
+    + '.card-b{background:rgba(0,0,0,.55);border:2px solid rgba(204,0,0,0.5);font-size:28px;transform:rotateY(180deg);gap:4px}'
+    + '.lbl{font-size:9px;color:#CC0000;text-align:center}'
+    + '.card.matched .card-b{background:rgba(0,120,60,.55);border-color:#00DD88;box-shadow:0 0 12px rgba(0,220,120,.3)}'
+    + '.card.matched{cursor:default}'
+    + '.start-btn{display:block;width:100%;padding:13px;border-radius:12px;border:none;background:#CC0000;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px;transition:all .2s}'
+    + '.start-btn:hover{background:linear-gradient(135deg,#EE1111,#AA0000);transform:translateY(-1px)}'
+    + '.result{background:rgba(0,0,0,.4);border-radius:14px;border:1px solid rgba(204,0,0,0.3);padding:16px;font-size:13px;color:rgba(255,255,255,.85);line-height:1.7;display:none;text-align:center}'
+    + '.score-big{font-size:36px;font-weight:900;color:#00DD88;margin:8px 0}'
+    + '.score-sub{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px}'
+    + '.ai-txt{font-size:12px;color:rgba(255,255,255,.8);white-space:pre-wrap;text-align:left;line-height:1.7;margin-top:10px}'
+    + '.spinner{width:24px;height:24px;border:3px solid #ddd;border-top-color:#CC0000;border-radius:50%;animation:spin .8s linear infinite;margin:12px auto}'
+    + '@keyframes spin{to{transform:rotate(360deg)}}'
+    + '@keyframes b{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}'
+    + '::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(204,0,0,0.3);border-radius:2px}'
+    + '</style></head><body>'
+    + '<h2>' + title + '</h2>'
+    + '<p class="sub">' + subtitle + '</p>'
+    + '<div class="stats">'
+    + '<div class="stat">' + lAtt   + '<span class="stat-val" id="sAtt">0</span></div>'
+    + '<div class="stat">' + lMatch + '<span class="stat-val" id="sMatch">0/8</span></div>'
+    + '<div class="stat">' + lScore + '<span class="stat-val score-val" id="sScore">0</span></div>'
+    + '<div class="stat">' + lTime  + '<span class="stat-val" id="sTime">0s</span></div>'
+    + '</div>'
+    + '<p class="phase" id="phase">' + lClickStart + '</p>'
+    + '<div class="grid" id="grid"></div>'
+    + '<button class="start-btn" id="startBtn" onclick="startGame()">' + lStart + '</button>'
+    + '<div class="result" id="result"></div>'
+    + '<script>'
+    + 'var PAIRS=' + pairsJson + ';'
+    + 'var isCn=' + (isCn ? 'true' : 'false') + ';'
+    + 'var L={'
+    +   'again:' + JSON.stringify(lAgain) + ','
+    +   'memo:'  + JSON.stringify(lMemo)  + ','
+    +   'go:'    + JSON.stringify(lGo)    + ','
+    +   'done:'  + JSON.stringify(lComplete) + ','
+    +   'pts:'   + JSON.stringify(lPts)   + ','
+    +   'time:'  + JSON.stringify(lTimeLbl) + ','
+    +   'att:'   + JSON.stringify(lAttLbl)  + ','
+    +   'aiLang:'+ JSON.stringify(aiLang) + ','
+    +   'aiInstr:'+ JSON.stringify(aiInstr) + ','
+    +   'err:'   + JSON.stringify(errMsg) + ''
+    + '};'
+    + 'var cards=[],flipped=[],matched=0,attempts=0,score=0,canFlip=false,tmr=null,secs=0;'
+
+    + 'function shuffle(arr){'
+    +   'var a=arr.slice();'
+    +   'for(var i=a.length-1;i>0;i--){'
+    +     'var j=Math.floor(Math.random()*(i+1));'
+    +     'var t=a[i];a[i]=a[j];a[j]=t;'
+    +   '}'
+    +   'return a;'
+    + '}'
+
+    + 'function renderGrid(showAll){'
+    +   'var g=document.getElementById("grid"),h="";'
+    +   'for(var i=0;i<cards.length;i++){'
+    +     'var c=cards[i];'
+    +     'var cls="card";'
+    +     'if(c.matched)cls+=" flipped matched";'
+    +     'else if(showAll||c.faceUp)cls+=" flipped";'
+    +     'h+=\'<div class="\'+cls+\'" id="c\'+i+\'" onclick="flip(\'+i+\')">\'+'
+    +       '\'<div class="card-inner">\'+'
+    +       '\'<div class="card-f">🀄</div>\'+'
+    +       '\'<div class="card-b"><div>\'+c.e+\'</div><div class="lbl">\'+c.n+\'</div></div>\'+'
+    +       '\'</div></div>\';'
+    +   '}'
+    +   'g.innerHTML=h;'
+    + '}'
+
+    + 'function startGame(){'
+    +   'var deck=PAIRS.concat(PAIRS);'
+    +   'deck=shuffle(deck);'
+    +   'cards=deck.map(function(p){return{e:p.e,n:p.n,matched:false,faceUp:false};});'
+    +   'flipped=[];matched=0;attempts=0;score=0;secs=0;canFlip=false;'
+    +   'if(tmr)clearInterval(tmr);'
+    +   'document.getElementById("startBtn").style.display="none";'
+    +   'document.getElementById("result").style.display="none";'
+    +   'document.getElementById("sAtt").textContent="0";'
+    +   'document.getElementById("sMatch").textContent="0/8";'
+    +   'document.getElementById("sScore").textContent="0";'
+    +   'document.getElementById("sTime").textContent="0s";'
+    +   'document.getElementById("phase").textContent=L.memo;'
+    +   'renderGrid(true);'
+    +   'setTimeout(function(){'
+    +     'renderGrid(false);canFlip=true;'
+    +     'document.getElementById("phase").textContent=L.go;'
+    +     'tmr=setInterval(function(){secs++;document.getElementById("sTime").textContent=secs+"s";},1000);'
+    +   '},3000);'
+    + '}'
+
+    + 'function flip(i){'
+    +   'if(!canFlip||flipped.length>=2||cards[i].matched||cards[i].faceUp)return;'
+    +   'cards[i].faceUp=true;'
+    +   'document.getElementById("c"+i).classList.add("flipped");'
+    +   'flipped.push(i);'
+    +   'if(flipped.length===2){'
+    +     'canFlip=false;'
+    +     'attempts++;'
+    +     'document.getElementById("sAtt").textContent=attempts;'
+    +     'var a=flipped[0],b=flipped[1];'
+    +     'setTimeout(function(){'
+    +       'if(cards[a].e===cards[b].e){'
+    +         'cards[a].matched=true;cards[b].matched=true;'
+    +         'cards[a].faceUp=true;cards[b].faceUp=true;'
+    +         'document.getElementById("c"+a).className="card flipped matched";'
+    +         'document.getElementById("c"+b).className="card flipped matched";'
+    +         'matched++;score+=10;'
+    +         'document.getElementById("sMatch").textContent=matched+"/8";'
+    +         'document.getElementById("sScore").textContent=score;'
+    +         'flipped=[];canFlip=true;'
+    +         'if(matched===8){clearInterval(tmr);setTimeout(endGame,400);}'
+    +       '}else{'
+    +         'cards[a].faceUp=false;cards[b].faceUp=false;'
+    +         'document.getElementById("c"+a).classList.remove("flipped");'
+    +         'document.getElementById("c"+b).classList.remove("flipped");'
+    +         'flipped=[];canFlip=true;'
+    +       '}'
+    +     '},700);'
+    +   '}'
+    + '}'
+
+    + 'async function endGame(){'
+    +   'document.getElementById("phase").textContent=L.done;'
+    +   'document.getElementById("startBtn").style.display="block";'
+    +   'document.getElementById("startBtn").textContent=L.again;'
+    +   'var rb=document.getElementById("result");'
+    +   'rb.style.display="block";'
+    +   'rb.innerHTML=\'<div class="score-big">🏆 \'+score+\' \'+L.pts+\'</div>\'+'
+    +               '\'<div class="score-sub">\'+L.time+\': \'+secs+\'s · \'+L.att+\': \'+attempts+\'</div>\'+'
+    +               '\'<div class="spinner"></div>\';'
+    +   'try{'
+    +     'var prompt=L.aiLang+" A student completed a Xidian University campus memory card game. Score: "+score+" pts ("+matched+" pairs). Time: "+secs+"s. Attempts: "+attempts+". "+L.aiInstr;'
+    +     'var r=await fetch("https://api.anthropic.com/v1/messages",{'
+    +       'method:"POST",'
+    +       'headers:{"Content-Type":"application/json"},'
+    +       'body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,messages:[{role:"user",content:prompt}]})'
+    +     '});'
+    +     'var d=await r.json();'
+    +     'var txt=(d.content||[]).map(function(c){return c.text||"";}).join("");'
+    +     'rb.innerHTML=\'<div class="score-big">🏆 \'+score+\' \'+L.pts+\'</div>\'+'
+    +               '\'<div class="score-sub">\'+L.time+\': \'+secs+\'s · \'+L.att+\': \'+attempts+\'</div>\'+'
+    +               '\'<div class="ai-txt">\'+txt+\'</div>\';'
+    +   '}catch(e){'
+    +     'rb.innerHTML=\'<div class="score-big">🏆 \'+score+\' \'+L.pts+\'</div>\'+'
+    +               '\'<div class="score-sub">\'+L.err+\'</div>\';'
+    +   '}'
+    +   'try{parent.postMessage({iframeHeight:document.body.scrollHeight+40},"*");}catch(ex){}'
+    + '}'
+
+    + 'renderGrid(false);'
+    + 'setInterval(function(){try{parent.postMessage({iframeHeight:document.body.scrollHeight+40},"*");}catch(e){}},800);'
+    + '<\/script></body></html>';
+
+  return doc;
+}
+// ══════════════════════ AI GENERATOR ══════════════════════
+// ══════════════════════ GALLERY DATA ══════════════════════
+// Add your image URLs here — each category holds 10 items.
+// url: '' means the slot shows a placeholder until you fill it in.
+// ── GALLERY DATA ────────────────────────────────────────────────────────────
+// Each item has:
+//   url      → image shown in English mode
+//   url_cn   → image shown in Chinese mode  (set to '' to fall back to url)
+//   label_en / label_cn → caption text
+// ────────────────────────────────────────────────────────────────────────────
+var GALLERY = {
+  stickers: [
+    { url: 'stickers (2).png',  url_cn: '',  label_en: 'Sticker 2',  label_cn: '贴纸 2'  },
+    { url: 'stickers (3).png',  url_cn: '',  label_en: 'Sticker 3',  label_cn: '贴纸 3'  },
+    { url: 'stickers (1).png',  url_cn: '',  label_en: 'Sticker 1',  label_cn: '贴纸 1'  },
+    { url: 'stickers (4).png',  url_cn: '',  label_en: 'Sticker 4',  label_cn: '贴纸 4'  },
+    { url: 'stickers (5).png',  url_cn: '',  label_en: 'Sticker 5',  label_cn: '贴纸 5'  },
+    { url: 'stickers (6).png',  url_cn: '',  label_en: 'Sticker 6',  label_cn: '贴纸 6'  },
+    { url: 'stickers (7).png',  url_cn: '',  label_en: 'Sticker 7',  label_cn: '贴纸 7'  },
+    { url: 'stickers (8).png',  url_cn: '',  label_en: 'Sticker 8',  label_cn: '贴纸 8'  },
+    { url: 'stickers (9).png',  url_cn: '',  label_en: 'Sticker 9',  label_cn: '贴纸 9'  },
+    { url: 'stickers (10).png', url_cn: '',  label_en: 'Sticker 10', label_cn: '贴纸 10' },
+    { url: 'stickers (11).png', url_cn: '',  label_en: 'Sticker 11', label_cn: '贴纸 11' },
+  ],
+  emojis: [
+    { url: 'emojis (1).png', url_cn: '',  label_en: 'Emoji 1',  label_cn: '表情 1'  },
+    { url: 'emojis (2).png', url_cn: '',  label_en: 'Emoji 2',  label_cn: '表情 2'  },
+    { url: 'emojis (3).png', url_cn: '',  label_en: 'Emoji 3',  label_cn: '表情 3'  },
+    { url: 'emojis (4).png', url_cn: '',  label_en: 'Emoji 4',  label_cn: '表情 4'  },
+    { url: 'emojis (5).png', url_cn: '',  label_en: 'Emoji 5',  label_cn: '表情 5'  },
+    { url: 'emojis (6).png', url_cn: '',  label_en: 'Emoji 6',  label_cn: '表情 6'  },
+  ],
+  quotes: [
+    // url     = English version image
+    // url_cn  = Chinese version image  ← fill in your Chinese quote filenames here
+    { url: 'quotes (1).png', url_cn: 'quotes cn (1).jpg', label_en: 'Quote 1',  label_cn: '名言 1'  },
+    { url: 'quotes (2).png', url_cn: 'quotes cn (2).jpg', label_en: 'Quote 2',  label_cn: '名言 2'  },
+    { url: 'quotes (3).png', url_cn: 'quotes cn (3).jpg', label_en: 'Quote 3',  label_cn: '名言 3'  },
+    { url: 'quotes (4).png', url_cn: 'quotes cn (4).jpg', label_en: 'Quote 4',  label_cn: '名言 4'  },
+    { url: 'quotes (5).png', url_cn: 'quotes cn (5).jpg', label_en: 'Quote 5',  label_cn: '名言 5'  },
+    { url: 'quotes (6).png', url_cn: 'quotes cn (6).jpg', label_en: 'Quote 6',  label_cn: '名言 6'  },
+    { url: 'quotes (7).png', url_cn: 'quotes cn (7).jpg', label_en: 'Quote 7',  label_cn: '名言 7'  },
+  ],
+  memes: [
+    // url     = English version image
+    // url_cn  = Chinese version image  ← fill in your Chinese meme filenames here
+    { url: 'memes (1).png', url_cn: 'memes cn (1).jpg', label_en: 'Meme 1',  label_cn: '梗图 1'  },
+    { url: 'memes (2).png', url_cn: 'memes cn (2).jpg', label_en: 'Meme 2',  label_cn: '梗图 2'  },
+    { url: 'memes (3).png', url_cn: 'memes cn (3).jpg', label_en: 'Meme 3',  label_cn: '梗图 3'  },
+    { url: 'memes (4).png', url_cn: 'memes cn (4).jpg', label_en: 'Meme 4',  label_cn: '梗图 4'  },
+    { url: 'memes (5).png', url_cn: 'memes cn (5).jpg', label_en: 'Meme 5',  label_cn: '梗图 5'  },
+    { url: 'memes (6).png', url_cn: 'memes cn (6).jpg', label_en: 'Meme 6',  label_cn: '梗图 6'  },
+    { url: 'memes (7).png', url_cn: 'memes cn (7).jpg', label_en: 'Meme 7',  label_cn: '梗图 7'  },
+    { url: 'memes (8).png', url_cn: 'memes cn (8).jpg', label_en: 'Meme 8',  label_cn: '梗图 8'  },
+    { url: 'memes (9).png', url_cn: 'memes cn (9).jpg', label_en: 'Meme 9',  label_cn: '梗图 9'  },
+  ],
+  poster: [
+    { url: 'posters (1).png', url_cn: '',  label_en: 'Poster 1',  label_cn: '海报 1'  },
+    { url: 'posters (2).png', url_cn: '',  label_en: 'Poster 2',  label_cn: '海报 2'  },
+    { url: 'posters (3).png', url_cn: '',  label_en: 'Poster 3',  label_cn: '海报 3'  },
+    { url: 'posters (4).png', url_cn: '',  label_en: 'Poster 4',  label_cn: '海报 4'  },
+    { url: 'posters (5).png', url_cn: '',  label_en: 'Poster 5',  label_cn: '海报 5'  },
+  ]
+};
+
+var GALLERY_ICONS = { stickers:'🏷️', emojis:'😊', quotes:'💬', memes:'😂', poster:'📋' };
+
+function selectGenType(type) {
+  currentGenType = type;
+  const types = ['stickers','quotes','memes','poster'];
+  types.forEach(function(t, i) {
+    var el = document.getElementById('genOpt' + i);
+    if (el) el.classList.toggle('active', t === type);
+  });
+  renderGallery();
+}
+
+function renderGallery() {
+  var el = document.getElementById('genGallery');
+  if (!el) return;
+  var items = GALLERY[currentGenType] || [];
+  var isCn = currentLang === 'cn';
+  var icon = GALLERY_ICONS[currentGenType];
+  var emptyMsg = isCn ? '图片即将上线，敬请期待！' : 'Images coming soon — check back later!';
+
+  // Resolve the display URL: prefer url_cn in Chinese mode (if set), else fall back to url
+  function resolveUrl(item) {
+    if (isCn && item.url_cn && item.url_cn.trim() !== '') return item.url_cn;
+    return item.url || '';
+  }
+
+  // Check if any URLs are filled (considering active language)
+  var hasContent = items.some(function(it) { return resolveUrl(it) !== ''; });
+
+  if (!hasContent) {
+    el.innerHTML =
+      '<div style="text-align:center;padding:50px 20px;background:rgba(0,0,0,0.2);border-radius:16px;border:2px dashed rgba(204,0,0,0.3)">' +
+      '<div style="font-size:48px;margin-bottom:14px">' + icon + '</div>' +
+      '<p style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:6px">' + emptyMsg + '</p>' +
+      '</div>';
+    return;
+  }
+
+  var container = document.createElement('div');
+  container.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:8px';
+
+  items.forEach(function(item, i) {
+    var label = isCn ? item.label_cn : item.label_en;
+    var displayUrl = resolveUrl(item);
+    var card = document.createElement('div');
+    if (displayUrl !== '') {
+      card.style.cssText = 'border-radius:10px;overflow:hidden;border:1px solid rgba(204,0,0,0.3);background:rgba(0,0,0,0.25);cursor:pointer;transition:transform .15s';
+      card.onmouseover = function(){ this.style.transform='scale(1.02)'; };
+      card.onmouseout  = function(){ this.style.transform='scale(1)'; };
+      (function(url, lbl){ card.onclick = function(){ openLightbox(url, lbl); }; })(displayUrl, label);
+      var img = document.createElement('img');
+      img.src = displayUrl;
+      img.alt = label;
+      img.style.cssText = 'width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:rgba(0,0,0,0.15)';
+      var cap = document.createElement('div');
+      cap.style.cssText = 'padding:4px 6px;font-size:10px;font-weight:600;color:#CC0000;text-align:center';
+      cap.textContent = label;
+      card.appendChild(img);
+      card.appendChild(cap);
+    } else {
+      card.style.cssText = 'border-radius:10px;border:1px dashed rgba(204,0,0,0.15);background:rgba(0,0,0,0.15);aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px';
+      var ph = document.createElement('div');
+      ph.style.cssText = 'font-size:28px;color:rgba(204,0,0,0.15)';
+      ph.textContent = icon;
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:10px;color:rgba(255,255,255,0.2)';
+      lbl.textContent = label;
+      card.appendChild(ph);
+      card.appendChild(lbl);
+    }
+    container.appendChild(card);
+  });
+  el.innerHTML = '';
+  el.appendChild(container);
+}
+
+// Lightbox for full-size view
+function openLightbox(url, label) {
+  var overlay = document.getElementById('lightboxOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'lightboxOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:pointer';
+    overlay.onclick = function() { overlay.style.display = 'none'; };
+    overlay.innerHTML =
+      '<img id="lightboxImg" src="" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 0 60px rgba(0,0,0,0.8)">' +
+      '<div id="lightboxLabel" style="margin-top:14px;font-size:14px;font-weight:600;color:#CC0000"></div>' +
+      '<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3)">' + (currentLang==='cn'?'点击任意位置关闭':'Click anywhere to close') + '</div>';
+    document.body.appendChild(overlay);
+  }
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxLabel').textContent = label;
+  overlay.style.display = 'flex';
+}
+
+
+// ══════════════════════ AI GUIDE CHAT ══════════════════════
+async function sendGuideMsg(textArg) {
+  const input = document.getElementById('guideChatInput');
+  const text = textArg || input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  const msgs = document.getElementById('guideMsgs');
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg user';
+  userDiv.textContent = text;
+  msgs.appendChild(userDiv);
+
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'msg bot';
+  typingDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  msgs.appendChild(typingDiv);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  guideMessages.push({ role: 'user', content: text });
+
+  const lang = currentLang === 'cn' ? 'Chinese (Simplified)' : 'English';
+  const sysPrompt = `You are an AI campus guide for Xidian University (西安电子科技大学), one of China's top engineering and technology universities located in Xi'an, Shaanxi. You are friendly, knowledgeable, and helpful. Answer questions about the university's academic programs, campus facilities, student life, history, admissions, dining, dormitories, clubs, events, transportation, and anything else students might need. Respond in ${lang}. Be warm, concise, and accurate. If unsure about specific real-time details, say so and provide general guidance.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: sysPrompt,
+        messages: guideMessages
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.map(c => c.text || '').join('') || (currentLang === 'cn' ? '抱歉，无法回答。' : 'Sorry, I could not answer that.');
+    guideMessages.push({ role: 'assistant', content: reply });
+    typingDiv.textContent = reply;
+  } catch(e) {
+    typingDiv.textContent = currentLang === 'cn' ? '出现错误，请重试。' : 'An error occurred. Please try again.';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function handleGuideChatKey(e) {
+  if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGuideMsg(); }
+}
+
+// ══════════════════════ FUTURE 2050 ══════════════════════
+
+// ── Future 2050 image URLs – set these in the source code ──
+var FUTURE_IMAGES = [
+  { url: 'future (1).png', caption_en: 'Smart classes', caption_cn: '智慧课堂' },
+  { url: 'future (2).png', caption_en: 'Technology campus', caption_cn: '科技园区' },
+  { url: 'future (3).png', caption_en: 'AI Research Center', caption_cn: 'AI 研究中心' },
+  { url: 'future (4).png', caption_en: 'Green Campus', caption_cn: '绿色校园' },
+  { url: 'future (5).png', caption_en: 'Student Center 2050', caption_cn: '2050学生中心' },
+  { url: 'future (6).png', caption_en: 'Tech Campus', caption_cn: '科技校区' }
+];
+
+function updateFutureSlots() {
+  const grid = document.getElementById('futureGrid');
+  const isCn = currentLang === 'cn';
+  grid.innerHTML = '';
+  FUTURE_IMAGES.forEach(function(slot, i) {
+    const div = document.createElement('div');
+    const caption = isCn ? slot.caption_cn : slot.caption_en;
+    if (slot.url) {
+      div.className = 'future-slot loaded';
+      var img = document.createElement('img');
+      img.src = slot.url;
+      img.alt = 'Future vision ' + (i+1);
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:14px';
+      img.onerror = function() {
+        this.parentElement.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px"><div style="font-size:32px;color:rgba(204,0,0,0.15);font-weight:900">0' + (i+1) + '</div><div style="font-size:28px">🔮</div></div>';
+      };
+      var cap = document.createElement('div');
+      cap.className = 'future-caption';
+      cap.textContent = caption;
+      div.appendChild(img);
+      div.appendChild(cap);
+    } else {
+      div.className = 'future-slot';
+      div.innerHTML = '<div class="future-num">0' + (i+1) + '</div>' +
+        '<div style="font-size:28px;margin-bottom:8px">🔮</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.3)">' + caption + '</div>';
+    }
+    grid.appendChild(div);
+  });
+}
+
+
+
+
+// ══════════════════════ AI HELPER ══════════════════════
+function toggleHelperChat() {
+  document.getElementById('helperOverlay').classList.toggle('open');
+}
+function closeHelperOnBg(e) {
+  if(e.target === document.getElementById('helperOverlay')) toggleHelperChat();
+}
+
+async function sendHelperMsg() {
+  const input = document.getElementById('helperInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  const msgs = document.getElementById('helperMsgs');
+  const uDiv = document.createElement('div');
+  uDiv.className = 'msg user'; uDiv.style.fontSize = '12px';
+  uDiv.textContent = text;
+  msgs.appendChild(uDiv);
+
+  const tDiv = document.createElement('div');
+  tDiv.className = 'msg bot'; tDiv.style.fontSize = '12px';
+  tDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  msgs.appendChild(tDiv);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  helperMessages.push({ role: 'user', content: text });
+  const lang = currentLang === 'cn' ? 'Chinese' : 'English';
+  const sys = `You are a friendly helper chatbot for the Xidian AI Campus Companion website. Explain how to use the 5 main features: 1) Interactive Campus Map (choose North or South Campus, click to open the map), 2) Mini Games (3 games: Campus Life Simulator, Personality Quiz, Memory Card Game), 3) AI Generator (choose stickers/quotes/memes/posters, enter a theme, click generate — AI creates 10 creative cards), 4) AI Campus Guide (chat about the university), 5) Future Xidian 2050 (see visions of the future campus). Also explain: the language button (top right, switch EN/CN), the back button (go to previous screen), the home button (go to main menu), and the AI helper button (this chat). Keep answers short and friendly. Respond in ${lang}.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system: sys,
+        messages: helperMessages
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.map(c => c.text || '').join('') || 'Sorry!';
+    helperMessages.push({ role: 'assistant', content: reply });
+    tDiv.textContent = reply;
+  } catch(e) {
+    tDiv.textContent = 'Error. Try again.';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ══════════════════════ INIT ══════════════════════
+updateFutureSlots();
+</script>
+</body>
+</html>
